@@ -1,0 +1,25 @@
+{
+  "nbHits": 2,
+  "hits": [
+    {
+      "objectID": "48540509",
+      "story_id": 48357725,
+      "parent_id": 48357725,
+      "author": "SarahTina",
+      "created_at": "2026-06-15T12:51:08Z",
+      "created_at_i": 1781527868,
+      "comment_text": "SafetyWing | Platform Engineer | 100% Remote | Anywhere<p>We are looking for a Platform Engineer to join our infrastructure team. You will work with Kubernetes, Terraform, and AWS to build our global platform.<p>Requirements: 5+ years experience, strong Python and Go skills, Kubernetes expertise.<p>Salary: $130k-$160k USD<p>Apply: <a href=\"https://safetywing.pinpointhq.com/postings/abc123\">https://safetywing.pinpointhq.com/postings/abc123</a>",
+      "story_title": "Ask HN: Who is hiring? (June 2026)"
+    },
+    {
+      "objectID": "48541000",
+      "story_id": 48357725,
+      "parent_id": 48357725,
+      "author": "devcompany",
+      "created_at": "2026-06-15T14:00:00Z",
+      "created_at_i": 1781532000,
+      "comment_text": "AcmeCorp | Senior Cloud Engineer | Remote (UK only) | Contract<p>We need a Senior Cloud Engineer for a 6-month contract. Experience with GCP and infrastructure-as-code required.<p>Rate: £650-£750/day<p>Email: jobs@acmecorp.com",
+      "story_title": "Ask HN: Who is hiring? (June 2026)"
+    }
+  ]
+}

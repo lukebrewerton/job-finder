@@ -2,9 +2,24 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import type { Job, JobDetail, JobsPage } from "../types";
 
-async function fetchJobs(minFit: number | null): Promise<JobsPage> {
+const REMOTE_OPTIONS = [
+  { value: "", label: "All" },
+  { value: "remote", label: "Remote" },
+  { value: "remote_first", label: "Remote-first" },
+  { value: "hybrid", label: "Hybrid" },
+  { value: "onsite", label: "Onsite" },
+  { value: "unknown", label: "Unknown" },
+];
+
+async function fetchJobs(
+  minFit: number | null,
+  remoteMode: string,
+  salaryDisclosed: boolean | null,
+): Promise<JobsPage> {
   const params = new URLSearchParams({ page_size: "100" });
   if (minFit !== null) params.set("min_fit", String(minFit));
+  if (remoteMode) params.set("remote_mode", remoteMode);
+  if (salaryDisclosed !== null) params.set("salary_disclosed", String(salaryDisclosed));
   const res = await fetch(`/api/jobs?${params}`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
@@ -181,37 +196,69 @@ function JobDetailPanel({ jobId, onClose }: { jobId: string; onClose: () => void
 
 export default function Jobs() {
   const [minFit, setMinFit] = useState<number | null>(null);
+  const [remoteMode, setRemoteMode] = useState("");
+  const [salaryDisclosed, setSalaryDisclosed] = useState<boolean | null>(null);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["jobs", minFit],
-    queryFn: () => fetchJobs(minFit),
+    queryKey: ["jobs", minFit, remoteMode, salaryDisclosed],
+    queryFn: () => fetchJobs(minFit, remoteMode, salaryDisclosed),
   });
 
   return (
     <>
-      <div className="mb-4 flex items-center gap-3">
-        <label className="text-sm text-slate-600 font-medium">Min fit score:</label>
-        <input
-          type="number"
-          min={0}
-          max={100}
-          placeholder="0–100"
-          value={minFit ?? ""}
-          onChange={(e) => {
-            const v = e.target.value;
-            setMinFit(v === "" ? null : Math.max(0, Math.min(100, parseInt(v, 10))));
-          }}
-          className="w-20 rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
-        />
-        {minFit !== null && (
-          <button
-            onClick={() => setMinFit(null)}
-            className="text-xs text-slate-400 hover:text-slate-600"
+      <div className="mb-4 flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-slate-600 font-medium">Min fit:</label>
+          <input
+            type="number"
+            min={0}
+            max={100}
+            placeholder="0–100"
+            value={minFit ?? ""}
+            onChange={(e) => {
+              const v = e.target.value;
+              setMinFit(v === "" ? null : Math.max(0, Math.min(100, parseInt(v, 10))));
+            }}
+            className="w-20 rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+          />
+          {minFit !== null && (
+            <button onClick={() => setMinFit(null)} className="text-xs text-slate-400 hover:text-slate-600">
+              Clear
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-slate-600 font-medium">Remote:</label>
+          <select
+            value={remoteMode}
+            onChange={(e) => setRemoteMode(e.target.value)}
+            className="rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
           >
-            Clear
-          </button>
-        )}
+            {REMOTE_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-slate-600 font-medium">Salary:</label>
+          <select
+            value={salaryDisclosed === null ? "" : String(salaryDisclosed)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setSalaryDisclosed(v === "" ? null : v === "true");
+            }}
+            className="rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+          >
+            <option value="">All</option>
+            <option value="true">Disclosed only</option>
+            <option value="false">Not disclosed</option>
+          </select>
+        </div>
       </div>
 
       {isLoading && <p className="text-slate-500">Loading jobs…</p>}
@@ -219,61 +266,64 @@ export default function Jobs() {
 
       {data && data.items.length === 0 && (
         <p className="text-slate-500">
-          {minFit !== null
-            ? `No jobs with fit score ≥ ${minFit}.`
+          {minFit !== null || remoteMode || salaryDisclosed !== null
+            ? "No jobs match the current filters."
             : <>No jobs yet. Run{" "}<code className="rounded bg-slate-100 px-1">make fetch SOURCE=adzuna</code> to populate.</>}
         </p>
       )}
 
       {data && data.items.length > 0 && (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-100 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
-                <th className="px-4 py-3">Role</th>
-                <th className="px-4 py-3">Company</th>
-                <th className="px-4 py-3">Location</th>
-                <th className="px-4 py-3">Remote</th>
-                <th className="px-4 py-3">Salary</th>
-                <th className="px-4 py-3">Fit</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.items.map((job) => (
-                <tr
-                  key={job.id}
-                  className="border-b border-slate-50 transition-colors hover:bg-slate-50 cursor-pointer"
-                  onClick={() => setSelectedJobId(job.id)}
-                >
-                  <td className="px-4 py-3 font-medium">
-                    <a
-                      href={job.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-teal-600 hover:underline"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {job.title}
-                    </a>
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">{job.company}</td>
-                  <td className="px-4 py-3 text-slate-500">{job.location ?? "—"}</td>
-                  <td className="px-4 py-3">
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
-                      {remoteLabel(job.remote_mode)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    <span className={job.salary_disclosed ? "" : "italic text-slate-400"}>
-                      {salaryLabel(job)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">{fitBadge(job.fit_score)}</td>
+        <>
+          <p className="mb-2 text-xs text-slate-400">{data.total} job{data.total !== 1 ? "s" : ""}</p>
+          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-100 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
+                  <th className="px-4 py-3">Role</th>
+                  <th className="px-4 py-3">Company</th>
+                  <th className="px-4 py-3">Location</th>
+                  <th className="px-4 py-3">Remote</th>
+                  <th className="px-4 py-3">Salary</th>
+                  <th className="px-4 py-3">Fit</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {data.items.map((job) => (
+                  <tr
+                    key={job.id}
+                    className="border-b border-slate-50 transition-colors hover:bg-slate-50 cursor-pointer"
+                    onClick={() => setSelectedJobId(job.id)}
+                  >
+                    <td className="px-4 py-3 font-medium">
+                      <a
+                        href={job.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-teal-600 hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {job.title}
+                      </a>
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">{job.company}</td>
+                    <td className="px-4 py-3 text-slate-500">{job.location ?? "—"}</td>
+                    <td className="px-4 py-3">
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+                        {remoteLabel(job.remote_mode)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">
+                      <span className={job.salary_disclosed ? "" : "italic text-slate-400"}>
+                        {salaryLabel(job)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">{fitBadge(job.fit_score)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {selectedJobId && (

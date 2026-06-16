@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     # Source credentials
     adzuna_app_id: str = ""
     adzuna_app_key: str = ""
+    reed_api_key: str = ""
 
     # LLM provider — either/or, selected at runtime (used from Phase 2 onward).
     # Set LLM_PROVIDER and the matching key + a model valid for that provider; the

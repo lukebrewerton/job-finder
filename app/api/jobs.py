@@ -51,13 +51,49 @@ def _default_cv_id(session: Session) -> uuid.UUID | None:
     return session.scalar(select(CV.id).where(CV.is_default.is_(True)).limit(1))
 
 
-def _scored_query(cv_id: uuid.UUID | None, min_fit: int | None) -> Select[tuple[Job, JobScore]]:
-    join_cond = (
+def _build_query(
+    cv_id: uuid.UUID | None,
+    min_fit: int | None,
+    remote_mode: str | None,
+    salary_disclosed: bool | None,
+) -> Select[tuple[Job, JobScore]]:
+    """Build a scored + deduplicated jobs query.
+
+    Uses DISTINCT ON (dedup_key) so each logical job appears once, preferring the
+    sibling that already has a score (avoids showing a blank score when a duplicate
+    from another source was scored first).
+    """
+    cv_join_cond = (
         and_(JobScore.job_id == Job.id, JobScore.cv_id == cv_id) if cv_id is not None else false()
     )
-    q: Select[tuple[Job, JobScore]] = select(Job, JobScore).outerjoin(JobScore, join_cond)
+
+    # Inner: pick one row per dedup_key, preferring scored siblings.
+    dedup_inner = (
+        select(Job.id.label("job_id"))
+        .outerjoin(JobScore, cv_join_cond)
+        .distinct(Job.dedup_key)
+        .order_by(
+            Job.dedup_key,
+            (JobScore.fit_score.isnot(None)).desc(),
+            JobScore.fit_score.desc().nulls_last(),
+            Job.fetched_at.desc(),
+        )
+        .subquery()
+    )
+
+    q: Select[tuple[Job, JobScore]] = (
+        select(Job, JobScore)
+        .join(dedup_inner, Job.id == dedup_inner.c.job_id)
+        .outerjoin(JobScore, cv_join_cond)
+    )
+
     if min_fit is not None:
         q = q.where(JobScore.fit_score >= min_fit)
+    if remote_mode is not None:
+        q = q.where(Job.remote_mode == remote_mode)
+    if salary_disclosed is not None:
+        q = q.where(Job.salary_disclosed.is_(salary_disclosed))
+
     return q
 
 
@@ -67,9 +103,11 @@ def list_jobs(
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=200),
     min_fit: int | None = Query(None, ge=0, le=100),
+    remote_mode: str | None = Query(None),
+    salary_disclosed: bool | None = Query(None),
 ) -> JobsPage:
     cv_id = _default_cv_id(session)
-    q = _scored_query(cv_id, min_fit)
+    q = _build_query(cv_id, min_fit, remote_mode, salary_disclosed)
 
     total = session.scalar(select(func.count()).select_from(q.subquery())) or 0
     rows = session.execute(

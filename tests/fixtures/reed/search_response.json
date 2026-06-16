@@ -1,0 +1,31 @@
+{
+  "totalResults": 2,
+  "results": [
+    {
+      "jobId": 56001234,
+      "jobTitle": "Cloud Platform Engineer",
+      "employerName": "TechCorp Ltd",
+      "jobUrl": "https://www.reed.co.uk/jobs/cloud-platform-engineer/56001234",
+      "jobDescription": "We are looking for a Cloud Platform Engineer with strong AWS and Kubernetes experience. This is a hybrid role, 2 days per week in our London office.",
+      "minimumSalary": 70000.0,
+      "maximumSalary": 90000.0,
+      "currency": "GBP",
+      "date": "01/06/2026",
+      "locationName": "London",
+      "expirationDate": "01/07/2026"
+    },
+    {
+      "jobId": 56001235,
+      "jobTitle": "Senior DevOps Engineer",
+      "employerName": "Startup Inc",
+      "jobUrl": "https://www.reed.co.uk/jobs/senior-devops-engineer/56001235",
+      "jobDescription": "Senior DevOps Engineer required. Competitive salary. Office-based in Manchester.",
+      "minimumSalary": null,
+      "maximumSalary": null,
+      "currency": null,
+      "date": "02/06/2026",
+      "locationName": "Manchester",
+      "expirationDate": "02/07/2026"
+    }
+  ]
+}

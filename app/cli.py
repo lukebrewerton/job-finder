@@ -61,6 +61,41 @@ def cmd_seed(args: argparse.Namespace) -> int:  # noqa: ARG001
             "enabled": True,
             "cadence_minutes": 60,
         },
+        {
+            "type": "reed",
+            "name": "Reed UK",
+            "config": {},
+            "enabled": True,
+            "cadence_minutes": 120,
+        },
+        {
+            "type": "himalayas",
+            "name": "Himalayas",
+            "config": {},
+            "enabled": True,
+            "cadence_minutes": 120,
+        },
+        {
+            "type": "remotive",
+            "name": "Remotive",
+            "config": {},
+            "enabled": True,
+            "cadence_minutes": 120,
+        },
+        {
+            "type": "remoteok",
+            "name": "Remote OK",
+            "config": {},
+            "enabled": True,
+            "cadence_minutes": 120,
+        },
+        {
+            "type": "hn_whoishiring",
+            "name": "HN Who Is Hiring",
+            "config": {},
+            "enabled": True,
+            "cadence_minutes": 1440,
+        },
     ]
 
     users = [

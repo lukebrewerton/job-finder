@@ -15,6 +15,7 @@ from app.core.dedup import make_content_hash, make_dedup_key
 from app.core.sources.base import FetchContext, RemoteMode, get_adapter
 from app.models.cv import CV
 from app.models.job import Job
+from app.models.job_score import JobScore
 from app.models.source import Source
 
 log = logging.getLogger(__name__)
@@ -137,7 +138,31 @@ def _enqueue_scoring(session: Session, job_ids: list[uuid.UUID]) -> None:
         log.info("no default CV set — skipping scoring enqueue for %d new jobs", len(job_ids))
         return
 
+    # Look up each new job's dedup_key so we can skip jobs whose logical
+    # duplicate has already been scored (avoids N×LLM calls for the same role).
+    new_job_rows = session.execute(select(Job.id, Job.dedup_key).where(Job.id.in_(job_ids))).all()
+
+    new_dedup_keys = [row.dedup_key for row in new_job_rows]
+    already_scored: set[str] = set(
+        session.scalars(
+            select(Job.dedup_key)
+            .join(JobScore, JobScore.job_id == Job.id)
+            .where(JobScore.cv_id == default_cv_id)
+            .where(Job.dedup_key.in_(new_dedup_keys))
+        ).all()
+    )
+
     cv_id_str = str(default_cv_id)
-    for job_id in job_ids:
-        score_job_task.delay(str(job_id), cv_id_str)
-    log.info("enqueued scoring for %d new jobs against cv=%s", len(job_ids), cv_id_str)
+    enqueued = 0
+    for row in new_job_rows:
+        if row.dedup_key in already_scored:
+            continue
+        score_job_task.delay(str(row.id), cv_id_str)
+        enqueued += 1
+
+    log.info(
+        "enqueued scoring for %d/%d new jobs against cv=%s",
+        enqueued,
+        len(job_ids),
+        cv_id_str,
+    )
