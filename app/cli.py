@@ -12,13 +12,30 @@ import sys
 def cmd_fetch(args: argparse.Namespace) -> int:
     import logging
 
+    from sqlalchemy import select
+
     from app.core.pipeline import run_fetch
     from app.db import SessionLocal
+    from app.models.profile import SearchProfile
 
     logging.basicConfig(level="INFO")
-    titles: list[str] = args.query or []
 
     with SessionLocal() as session:
+        if args.query:
+            titles: list[str] = args.query
+        else:
+            # Use title variations from all active profiles (Phase 2+).
+            profiles = session.scalars(
+                select(SearchProfile).where(SearchProfile.active.is_(True))
+            ).all()
+            seen: set[str] = set()
+            titles = []
+            for p in profiles:
+                for t in p.title_variations or []:
+                    if t not in seen:
+                        seen.add(t)
+                        titles.append(t)
+
         counts = run_fetch(args.source, titles, session)
 
     print(
@@ -34,6 +51,7 @@ def cmd_seed(args: argparse.Namespace) -> int:  # noqa: ARG001
 
     from app.db import SessionLocal
     from app.models.source import Source
+    from app.models.user import User
 
     sources = [
         {
@@ -45,13 +63,22 @@ def cmd_seed(args: argparse.Namespace) -> int:  # noqa: ARG001
         },
     ]
 
+    users = [
+        {"email": "luke@brewerton.me", "name": "Luke"},
+    ]
+
     with SessionLocal() as session:
         for s in sources:
             stmt = pg_insert(Source).values(**s).on_conflict_do_nothing(index_elements=["type"])
             session.execute(stmt)
+
+        for u in users:
+            stmt = pg_insert(User).values(**u).on_conflict_do_nothing(index_elements=["email"])
+            session.execute(stmt)
+
         session.commit()
 
-    print(f"[seed] inserted/skipped {len(sources)} source(s).")
+    print(f"[seed] upserted {len(sources)} source(s), {len(users)} user(s).")
     return 0
 
 
@@ -65,10 +92,10 @@ def main(argv: list[str] | None = None) -> int:
         "--query",
         nargs="+",
         metavar="TITLE",
-        help="Title queries (Phase 1: no profiles yet). Omit to search without keyword.",
+        help="Override title queries. Omit to use active profile title variations.",
     )
 
-    sub.add_parser("seed", help="Seed sources for local dev")
+    sub.add_parser("seed", help="Seed sources and default user for local dev")
 
     args = parser.parse_args(argv)
 

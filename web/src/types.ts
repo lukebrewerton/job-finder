@@ -1,0 +1,51 @@
+export type Job = {
+  id: string;
+  title: string;
+  company: string;
+  url: string;
+  location: string | null;
+  remote_mode: string;
+  salary_min: number | null;
+  salary_max: number | null;
+  salary_currency: string | null;
+  salary_disclosed: boolean;
+  source_id: string;
+};
+
+export type JobsPage = {
+  items: Job[];
+  total: number;
+  page: number;
+  page_size: number;
+};
+
+export type Profile = {
+  id: string;
+  user_id: string;
+  name: string;
+  canonical_role: string;
+  seniority: string;
+  title_variations: string[];
+  remote_modes: string[];
+  require_salary: boolean;
+  min_salary: number | null;
+  currency: string;
+  locations: string[] | null;
+  active: boolean;
+};
+
+export type CVParsed = {
+  skills: string[];
+  roles: string[];
+  years_experience: number;
+  summary: string;
+};
+
+export type CV = {
+  id: string;
+  user_id: string;
+  name: string;
+  parsed: CVParsed;
+  version: number;
+  is_default: boolean;
+};
