@@ -116,7 +116,8 @@ async in the worker and is cached.
 
 All tables have `id` (uuid pk), `created_at`, `updated_at` unless noted.
 
-**users** — `email` (unique), `name`. (Auth added in Phase 6; until then a seeded user.)
+**users** — `email` (unique), `name`, `oidc_sub` (unique, nullable until Phase 6).
+(Auth added in Phase 6; until then a seeded user. `oidc_sub` is set on first OIDC login.)
 
 **search_profiles** — `user_id` fk · `name` · `canonical_role` (e.g. "Cloud Platform
 Engineer") · `seniority` (enum: junior/mid/senior/lead/staff/principal) ·
@@ -358,10 +359,26 @@ A job often appears from several sources (e.g. Adzuna *and* the company's Greenh
 ## 12. Multi-tenancy & auth
 
 - All user data keyed by `user_id` from day one (seed one user for local dev).
-- **Phase 6** adds real auth. Default to an OIDC provider via env config (works with
-  the user's existing Entra / Cloudflare Access setup); fall back to simple sessions.
-  Do not hardcode any provider — it's configured via env.
-- Sources are global; results are partitioned per user by profile + CV.
+- **Phase 6** adds real auth via OIDC. The app is a pure relying party — it stores no
+  passwords; only the OIDC `sub` claim and `email`/`name` from the ID token.
+- **Provider-agnostic.** Three env vars fully configure auth:
+  - `OIDC_ISSUER` — discovery URL root (e.g. `https://accounts.google.com` for Google,
+    `https://login.microsoftonline.com/<tenant>/v2.0` for Entra, or a self-hosted
+    Authentik/Keycloak base URL).
+  - `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` — from the provider's app registration.
+  - `OIDC_REDIRECT_URI` — callback URL (e.g. `https://jobs.example.com/auth/callback`).
+  No other auth code changes when switching provider.
+- **User provisioning.** On first successful OIDC callback, if no `users` row exists for
+  that `email`, one is auto-created (email + name from ID token). Returning users are
+  looked up by email. Optionally restrict sign-in to a comma-separated
+  `OIDC_ALLOWED_EMAILS` list (if set, anyone not on the list gets a 403; if unset, any
+  verified OIDC account may sign in — appropriate for a private deployment where the URL
+  is not public).
+- **Session.** After callback, issue a signed HTTP-only cookie (JWT, `SESSION_SECRET`
+  env var) containing `user_id`. FastAPI dependency `current_user` decodes it and gates
+  all non-public routes. No server-side session store needed.
+- Sources are global; results (profiles, CVs, job scores, job states) are partitioned
+  per user.
 
 ---
 
@@ -409,8 +426,16 @@ JSON-LD is ingested; ATS rows win dedup over aggregators.
 
 **Phase 6 — Triage & multi-user.** `job_states` + triage UI; OIDC auth; per-user
 partitioning verified.
-*Accept:* two users see only their own results; triage states persist; auth is
-env-configured with no hardcoded provider.
+*Accept:*
+- `GET /auth/login` redirects to the configured OIDC provider; callback sets a signed
+  session cookie; `GET /auth/me` returns the current user.
+- Switching `OIDC_ISSUER` (e.g. Google → Entra) requires no code changes.
+- Auto-provisioning: a new email on first OIDC login creates a `users` row.
+- `OIDC_ALLOWED_EMAILS` (if set) gates sign-in to listed addresses only.
+- Two users each see only their own profiles, CVs, scores and triage states.
+- Triage states (`new`/`shortlisted`/`applied`/`rejected`/`ignored`) persist across
+  page loads and are shown in the jobs table.
+- All protected API routes return 401 when the session cookie is absent or invalid.
 
 ---
 
