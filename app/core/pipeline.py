@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 import app.core.sources  # noqa: F401 — side-effect: registers all adapters
 from app.core.dedup import make_content_hash, make_dedup_key
 from app.core.sources.base import FetchContext, RemoteMode, get_adapter
+from app.models.cv import CV
 from app.models.job import Job
 from app.models.source import Source
 
@@ -42,13 +43,15 @@ def run_fetch(source_key: str, titles: list[str], session: Session) -> dict[str,
     }
 
     fetched = new = updated = skipped = 0
+    new_job_ids: list[uuid.UUID] = []
 
     for raw in get_adapter(source_key).fetch(ctx):
         fetched += 1
         content_hash = make_content_hash(raw.title, raw.company, raw.location)
         dedup_key = make_dedup_key(raw.title, raw.company, raw.location)
 
-        if raw.external_id in existing:
+        is_new = raw.external_id not in existing
+        if not is_new:
             if existing[raw.external_id] == content_hash:
                 skipped += 1
                 continue
@@ -56,10 +59,14 @@ def run_fetch(source_key: str, titles: list[str], session: Session) -> dict[str,
         else:
             new += 1
 
+        job_id = uuid.uuid4()
+        if is_new:
+            new_job_ids.append(job_id)
+
         stmt = (
             pg_insert(Job)
             .values(
-                id=uuid.uuid4(),
+                id=job_id,
                 source_id=source.id,
                 external_id=raw.external_id,
                 title=raw.title,
@@ -106,6 +113,8 @@ def run_fetch(source_key: str, titles: list[str], session: Session) -> dict[str,
     source.last_run_at = now
     session.commit()
 
+    _enqueue_scoring(session, new_job_ids)
+
     counts: dict[str, int | str] = {
         "source": source_key,
         "fetched": fetched,
@@ -115,3 +124,20 @@ def run_fetch(source_key: str, titles: list[str], session: Session) -> dict[str,
     }
     log.info("fetch complete", extra=counts)
     return counts
+
+
+def _enqueue_scoring(session: Session, job_ids: list[uuid.UUID]) -> None:
+    if not job_ids:
+        return
+
+    from app.tasks.scoring import score_job_task
+
+    default_cv_id = session.scalar(select(CV.id).where(CV.is_default.is_(True)).limit(1))
+    if default_cv_id is None:
+        log.info("no default CV set — skipping scoring enqueue for %d new jobs", len(job_ids))
+        return
+
+    cv_id_str = str(default_cv_id)
+    for job_id in job_ids:
+        score_job_task.delay(str(job_id), cv_id_str)
+    log.info("enqueued scoring for %d new jobs against cv=%s", len(job_ids), cv_id_str)

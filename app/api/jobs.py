@@ -3,13 +3,15 @@ from __future__ import annotations
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy import func, select
+from sqlalchemy import Select, and_, false, func, select
 from sqlalchemy.orm import Session
 
 from app.db import get_session
+from app.models.cv import CV
 from app.models.job import Job
+from app.models.job_score import JobScore
 
 router = APIRouter(prefix="/api/jobs", tags=["jobs"])
 
@@ -26,8 +28,16 @@ class JobOut(BaseModel):
     salary_currency: str | None
     salary_disclosed: bool
     source_id: uuid.UUID
+    fit_score: int | None = None
+    flags: list[str] | None = None
 
     model_config = {"from_attributes": True}
+
+
+class JobDetail(JobOut):
+    matched_skills: list[str] | None = None
+    gaps: list[str] | None = None
+    rationale: str | None = None
 
 
 class JobsPage(BaseModel):
@@ -37,14 +47,92 @@ class JobsPage(BaseModel):
     page_size: int
 
 
+def _default_cv_id(session: Session) -> uuid.UUID | None:
+    return session.scalar(select(CV.id).where(CV.is_default.is_(True)).limit(1))
+
+
+def _scored_query(cv_id: uuid.UUID | None, min_fit: int | None) -> Select[tuple[Job, JobScore]]:
+    join_cond = (
+        and_(JobScore.job_id == Job.id, JobScore.cv_id == cv_id) if cv_id is not None else false()
+    )
+    q: Select[tuple[Job, JobScore]] = select(Job, JobScore).outerjoin(JobScore, join_cond)
+    if min_fit is not None:
+        q = q.where(JobScore.fit_score >= min_fit)
+    return q
+
+
 @router.get("", response_model=JobsPage)
 def list_jobs(
     session: Annotated[Session, Depends(get_session)],
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=200),
+    min_fit: int | None = Query(None, ge=0, le=100),
 ) -> JobsPage:
-    total = session.scalar(select(func.count()).select_from(Job)) or 0
-    items = session.scalars(
-        select(Job).order_by(Job.fetched_at.desc()).offset((page - 1) * page_size).limit(page_size)
+    cv_id = _default_cv_id(session)
+    q = _scored_query(cv_id, min_fit)
+
+    total = session.scalar(select(func.count()).select_from(q.subquery())) or 0
+    rows = session.execute(
+        q.order_by(JobScore.fit_score.desc().nulls_last(), Job.fetched_at.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
     ).all()
-    return JobsPage(items=list(items), total=total, page=page, page_size=page_size)
+
+    items: list[JobOut] = []
+    for row in rows:
+        job: Job = row[0]
+        score: JobScore | None = row[1]
+        items.append(
+            JobOut(
+                id=job.id,
+                title=job.title,
+                company=job.company,
+                url=job.url,
+                location=job.location,
+                remote_mode=job.remote_mode,
+                salary_min=job.salary_min,
+                salary_max=job.salary_max,
+                salary_currency=job.salary_currency,
+                salary_disclosed=job.salary_disclosed,
+                source_id=job.source_id,
+                fit_score=score.fit_score if score else None,
+                flags=score.flags if score else None,
+            )
+        )
+    return JobsPage(items=items, total=total, page=page, page_size=page_size)
+
+
+@router.get("/{job_id}", response_model=JobDetail)
+def get_job(
+    job_id: uuid.UUID,
+    session: Annotated[Session, Depends(get_session)],
+) -> JobDetail:
+    job = session.get(Job, job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found.")
+
+    cv_id = _default_cv_id(session)
+    score: JobScore | None = None
+    if cv_id is not None:
+        score = session.scalar(
+            select(JobScore).where(JobScore.job_id == job_id, JobScore.cv_id == cv_id)
+        )
+
+    return JobDetail(
+        id=job.id,
+        title=job.title,
+        company=job.company,
+        url=job.url,
+        location=job.location,
+        remote_mode=job.remote_mode,
+        salary_min=job.salary_min,
+        salary_max=job.salary_max,
+        salary_currency=job.salary_currency,
+        salary_disclosed=job.salary_disclosed,
+        source_id=job.source_id,
+        fit_score=score.fit_score if score else None,
+        flags=score.flags if score else None,
+        matched_skills=score.matched_skills if score else None,
+        gaps=score.gaps if score else None,
+        rationale=score.rationale if score else None,
+    )

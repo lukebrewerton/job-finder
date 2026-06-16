@@ -10,6 +10,14 @@ export type Job = {
   salary_currency: string | null;
   salary_disclosed: boolean;
   source_id: string;
+  fit_score: number | null;
+  flags: string[] | null;
+};
+
+export type JobDetail = Job & {
+  matched_skills: string[] | null;
+  gaps: string[] | null;
+  rationale: string | null;
 };
 
 export type JobsPage = {
