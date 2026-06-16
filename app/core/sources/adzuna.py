@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable
 from datetime import datetime
 
@@ -9,6 +10,29 @@ from app.core.sources.base import FetchContext, RawJob, RemoteMode, register
 
 _BASE_URL = "https://api.adzuna.com/v1/api/jobs/gb/search"
 _RESULTS_PER_PAGE = 50
+
+# Patterns checked in priority order: most specific first.
+# "Hybrid" beats "remote" because hybrid roles often say both ("hybrid remote").
+_RE_FULLY_REMOTE = re.compile(r"\b(fully\s+remote|100\s*%\s*remote|remote\s+only)\b", re.IGNORECASE)
+_RE_REMOTE_FIRST = re.compile(r"\bremote[\s-]first\b", re.IGNORECASE)
+_RE_HYBRID = re.compile(r"\bhybrid\b", re.IGNORECASE)
+_RE_REMOTE = re.compile(r"\bremote\b", re.IGNORECASE)
+_RE_ONSITE = re.compile(r"\b(onsite|on[\s-]site|in[\s-]office|office[\s-]based)\b", re.IGNORECASE)
+
+
+def _infer_remote_mode(title: str, description: str) -> RemoteMode:
+    text = f"{title} {description}"
+    if _RE_FULLY_REMOTE.search(text):
+        return RemoteMode.REMOTE
+    if _RE_REMOTE_FIRST.search(text):
+        return RemoteMode.REMOTE_FIRST
+    if _RE_HYBRID.search(text):
+        return RemoteMode.HYBRID
+    if _RE_REMOTE.search(text):
+        return RemoteMode.REMOTE
+    if _RE_ONSITE.search(text):
+        return RemoteMode.ONSITE
+    return RemoteMode.UNKNOWN
 
 
 @register
@@ -57,7 +81,7 @@ def _map_item(item: dict) -> RawJob:
         company=item.get("company", {}).get("display_name", ""),
         url=item["redirect_url"],
         description=item.get("description", ""),
-        remote_mode=RemoteMode.UNKNOWN,
+        remote_mode=_infer_remote_mode(item["title"], item.get("description", "")),
         location=item.get("location", {}).get("display_name"),
         salary_min=int(salary_min_raw) if salary_min_raw is not None else None,
         salary_max=int(salary_max_raw) if salary_max_raw is not None else None,
