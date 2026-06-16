@@ -42,7 +42,10 @@ def create_app() -> FastAPI:
 
         return {"ready": healthy, "checks": checks}
 
-    # Phase 1+ routers (jobs, profiles, cvs, sources, admin) are included here.
+    from app.api.jobs import router as jobs_router
+
+    app.include_router(jobs_router)
+
     return app
 
 

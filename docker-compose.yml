@@ -19,6 +19,8 @@ x-backend: &backend
     REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
     ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     LLM_MODEL: ${LLM_MODEL:-claude-sonnet-4-6}
+    ADZUNA_APP_ID: ${ADZUNA_APP_ID:-}
+    ADZUNA_APP_KEY: ${ADZUNA_APP_KEY:-}
   volumes:
     - .:/app
   depends_on:

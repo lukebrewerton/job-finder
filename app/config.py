@@ -21,6 +21,10 @@ class Settings(BaseSettings):
 
     redis_url: str = "redis://redis:6379/0"
 
+    # Source credentials
+    adzuna_app_id: str = ""
+    adzuna_app_key: str = ""
+
     # LLM provider — either/or, selected at runtime (used from Phase 2 onward).
     # Set LLM_PROVIDER and the matching key + a model valid for that provider; the
     # other provider's key is ignored. Both SDKs are installed so switching is

@@ -33,10 +33,10 @@ lint: ## Lint + format-check + type-check (black --check, ruff, mypy)
 format: ## Auto-fix lint issues and format the code
 	$(COMPOSE) run --rm api sh -c "ruff check --fix . && black ."
 
-fetch: ## Run one source adapter: make fetch SOURCE=adzuna
-	$(COMPOSE) run --rm api python -m app.cli fetch --source $(SOURCE)
+fetch: ## Run one source adapter: make fetch SOURCE=<key> [QUERY="cloud engineer"]
+	$(COMPOSE) run --rm api python -m app.cli fetch --source $(SOURCE) $(if $(QUERY),--query "$(QUERY)",)
 
-seed: ## Seed local dev data
+seed: ## Seed sources and local dev data
 	$(COMPOSE) run --rm api python -m app.cli seed
 
 shell: ## Shell into the api container

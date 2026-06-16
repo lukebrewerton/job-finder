@@ -16,6 +16,8 @@ x-backend-env: &backend-env
   REDIS_URL: redis://redis:6379/0
   ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
   LLM_MODEL: ${LLM_MODEL:-claude-sonnet-4-6}
+  ADZUNA_APP_ID: ${ADZUNA_APP_ID:-}
+  ADZUNA_APP_KEY: ${ADZUNA_APP_KEY:-}
 
 x-build: &build
   context: .
