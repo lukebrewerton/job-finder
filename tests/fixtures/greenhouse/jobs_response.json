@@ -1,0 +1,172 @@
+{
+  "company": {},
+  "jobs": [
+    {
+      "absolute_url": "https://job-boards.greenhouse.io/tailscale/jobs/4699962005",
+      "data_compliance": [
+        {
+          "type": "gdpr",
+          "requires_consent": false,
+          "requires_processing_consent": false,
+          "requires_retention_consent": false,
+          "retention_period": null,
+          "demographic_data_consent_applies": false
+        }
+      ],
+      "internal_job_id": 4434952005,
+      "location": {
+        "name": "Remote (United States)"
+      },
+      "metadata": [
+        {
+          "id": 4536497005,
+          "name": "Employment Type",
+          "value": "Full-time",
+          "value_type": "single_select"
+        }
+      ],
+      "id": 4699962005,
+      "updated_at": "2026-06-04T12:35:58-04:00",
+      "requisition_id": "310",
+      "title": "Business Operations & Strategy Manager",
+      "company_name": "Tailscale",
+      "first_published": "2026-05-28T06:30:38-04:00",
+      "language": "en",
+      "application_deadline": null,
+      "content": "&lt;div class=&quot;content-intro&quot;&gt;&lt;p&gt;&lt;strong&gt;About Tailscale&amp;nbsp;&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;Tailscale is building the new Internet by delivering software that makes it easy to securely interconnect people and their devices, no matter where they are. From hobbyists to multinational corporations, teams of every size use Tailscale each day to protect their networks, share access to internal tools, and more. We&#39;re building a future for the Internet that&#39;s easy, sensible, and safe, like it used to be. Founded in 2019 and fully distributed, we&#39;re backed by Accel, CRV, Insight, Heavybit, and Uncork Capital.&lt;/p&gt;&lt;/div&gt;&lt;p&gt;&lt;span style=&quot;font-size: 12pt;&quot;&gt;&lt;strong&gt;Job Description&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;The Business Operations &amp;amp; Strategy team is Tailscale&#39;s embedded operator for the most significant cross-functional problems that don&#39;t have a natural owner, or that are critical to the long-term success of Tailscale \u2013 we diagnose, we implement, and we hand off durable solutions so the company doesn&#39;t have to solve the same problem twice.&lt;/p&gt;\n&lt;p&gt;We&#39;re looking for someone both highly competent and highly curious -- the kind of person who isn&#39;t satisfied with &quot;good enough,&quot; and who won&#39;t leave a known problem unfixed. We&#39;re a small, high-leverage team working at the intersection of commercial strategy, operational infrastructure, and company-wide execution.&amp;nbsp;&lt;/p&gt;\n&lt;p&gt;The scope of this role reflects that mandate: things like commercial strategy, international expansion, improving business systems, pricing architecture \u2014 work that&#39;s critical enough that someone has to own getting it across the finish line. If you thrive on ambiguity, care deeply about getting things done, and want to see a direct line between your work and the company&#39;s trajectory, please apply. This position reports to the Senior Manager of Business Operations &amp;amp; Strategy.&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-size: 12pt;&quot;&gt;&lt;strong&gt;Key Responsibilities&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;While projects can vary as the company evolves, below are a few examples of projects the Business Operations &amp;amp; Strategy team is working on or has worked on in the past:&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Reshaping our pricing and packaging strategy&lt;/li&gt;\n&lt;li&gt;Expanding the company to APAC through Singapore&lt;/li&gt;\n&lt;li&gt;Scoping and sizing new commercial opportunities&lt;/li&gt;\n&lt;li&gt;Driving cross-company AI adoption initiatives&lt;/li&gt;\n&lt;li&gt;Performing deep-dive data analysis to identify opportunities and mitigate challenges&lt;/li&gt;\n&lt;li&gt;Partnering with RevOps to mature our GTM infrastructure&lt;/li&gt;\n&lt;li&gt;Reducing rework and duplication in our business systems&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;span style=&quot;font-size: 12pt;&quot;&gt;&lt;strong&gt;What We Are Looking For&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;4+ years of experience in business or strategy operations, strategy consulting, investment banking, venture capital, or a similarly analytical and execution-oriented role at a high-growth tech company&lt;/li&gt;\n&lt;li&gt;Demonstrated ability to own complex, cross-functional projects from diagnosis through to completion (not just analysis and recommendations)&lt;/li&gt;\n&lt;li&gt;Strong quantitative skills; comfortable doing your own data analysis without needing a dedicated analyst&lt;/li&gt;\n&lt;li&gt;Familiarity with SaaS business models, GTM systems, and how a B2B company generates and retains revenue&lt;/li&gt;\n&lt;li&gt;Clear, concise written communication \u2014 much of the cross-functional work happens async and in writing&lt;/li&gt;\n&lt;li&gt;High tolerance for ambiguity, paired with the judgment to know when to move and when to ask&lt;/li&gt;\n&lt;li&gt;Intellectual curiosity and a low tolerance for leaving known problems unaddressed&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;span style=&quot;font-size: 12pt;&quot;&gt;&lt;strong&gt;Nice to Have&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Actual first-hand experience using Tailscale \u2014 it only takes a few minutes to set up and will greatly strengthen your application!&lt;/li&gt;\n&lt;li&gt;Experience at a PLG company and/or first-hand experience with popular PLG projects \u2014 we sell to developers, and understanding how they discover and adopt tools matters&lt;/li&gt;\n&lt;li&gt;Experience at a Series C or similarly-sized tech company (200-500 employees)&lt;/li&gt;\n&lt;li&gt;Experience with Salesforce, Snowflake, Looker, Hex, or similar GTM and analytics tooling&lt;/li&gt;\n&lt;li&gt;Comfort with AI-assisted workflows and an instinct for where automation creates real leverage versus noise&lt;/li&gt;\n&lt;li&gt;Experience at a company that has gone through a pricing transition, international expansion, or similar structural growth milestone&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;As a company, we strive to maintain fair and equitable compensation practices within our team across all roles and all levels. Tailscale&#39;s compensation package includes base salary, equity, and comprehensive benefits. The salary range displayed on each job posting represents the target range for a new hire&#39;s base salary. Individual offers may vary based on experience and skill set.&lt;/p&gt;\n&lt;p&gt;&amp;nbsp;&lt;/p&gt;&lt;div class=&quot;content-pay-transparency&quot;&gt;&lt;div class=&quot;pay-input&quot;&gt;&lt;div class=&quot;title&quot;&gt;US Pay Range&lt;/div&gt;&lt;div class=&quot;pay-range&quot;&gt;&lt;span&gt;$124,000&lt;/span&gt;&lt;span class=&quot;divider&quot;&gt;&amp;mdash;&lt;/span&gt;&lt;span&gt;$180,000 USD&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;content-conclusion&quot;&gt;&lt;p&gt;&lt;em data-stringify-type=&quot;italic&quot;&gt;Frequently cited statistics show that people who identify with historically marginalized groups are likely to apply to jobs only if they meet 100% of the qualifications.&amp;nbsp;&lt;/em&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;&lt;em data-stringify-type=&quot;italic&quot;&gt;We encourage you to help us break that statistic!&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;What We Offer&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;&lt;strong&gt;An inclusive, flexible environment where you can be your authentic self.&lt;/strong&gt; We recognize the impact of diverse voices and backgrounds on the growth of our people, product, and company. And that flexibility in how and when you work empowers our team to integrate work and life.&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;A competitive total compensation package.&lt;/strong&gt; This includes a base salary, an equity incentive plan and variable commission (for quota-based roles).&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Comprehensive group benefits with no waiting period. &lt;/strong&gt;Take advantage of coverage for health, vision, dental, and more for you and your family!&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Remote first company&lt;/strong&gt;\u2014most of our teams work fully remotely. Enjoy a change of scenery wherever you can get wifi, participate in virtual and in-person social events, and leverage our corporate co-working program to visit WeWork (or other similar spaces near you). Some roles require in-office collaboration depending on team needs, which will be clearly noted in the job description.&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Connect with other Tailscalars IRL. &lt;/strong&gt;Attend our annual company retreat, participate in team off-sites, and collaborate in person with teammates across Canada, the United States, and the United Kingdom. We support intentional in-person connection through team travel and distributed collaboration.&lt;strong&gt;&lt;br&gt;&lt;/strong&gt;&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Support for your personal and professional development.&lt;/strong&gt; Grow your career thoughtfully with $1500 USD annually for professional development, or take advantage of mentorship, coaching, and internal promotion opportunities.&amp;nbsp;&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Paid time off and a healthy work-life integration.&amp;nbsp;&lt;/strong&gt;Our flexible, paid time off program supports you for any situation life throws your way, whether moving homes or travelling the world!&amp;nbsp;&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;A build-your-own home office setup. &lt;/strong&gt;You choose your own company-owned laptop (Mac or PC), receive a monthly home internet reimbursement, and $1000 USD to customize your workstation to make it your own.&amp;nbsp;&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Generous parental leave program from your first day. &lt;/strong&gt;We care about your life outside of work and encourage new parents to take advantage of parental leave top-ups for up to 26 weeks.&amp;nbsp;&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;em&gt;Tailscale is committed to providing an accessible and inclusive hiring process. If you require an accommodation at any stage of the recruitment process or related to any aspect of this role, please contact your recruiter.&lt;/em&gt;&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;Our hiring process uses AI-assisted tools to help screen and assess candidates. All hiring decisions are made by people.&lt;/em&gt;&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;Please be aware that legitimate emails from Tailscale&#39;s talent team will only originate from @tailscale.com, @greenhouse.io, and @interviews.modernloop.io email addresses. For more information about protecting yourself from impersonators and scams, please visit &lt;a href=&quot;https://tailscale.com/scam-awareness&quot;&gt;https://tailscale.com/scam-awareness&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;",
+      "departments": [
+        {
+          "id": 4044817005,
+          "name": "Operations",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ],
+      "offices": [
+        {
+          "id": 4008467005,
+          "name": "Remote (Canada)",
+          "location": "Canada",
+          "child_ids": [],
+          "parent_id": null
+        },
+        {
+          "id": 4008466005,
+          "name": "Remote (United States) ",
+          "location": "United States",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ]
+    },
+    {
+      "absolute_url": "https://job-boards.greenhouse.io/tailscale/jobs/4694081005",
+      "data_compliance": [
+        {
+          "type": "gdpr",
+          "requires_consent": false,
+          "requires_processing_consent": false,
+          "requires_retention_consent": false,
+          "retention_period": null,
+          "demographic_data_consent_applies": false
+        }
+      ],
+      "internal_job_id": 4434952005,
+      "location": {
+        "name": "Remote (Canada)"
+      },
+      "metadata": [
+        {
+          "id": 4536497005,
+          "name": "Employment Type",
+          "value": "Full-time",
+          "value_type": "single_select"
+        }
+      ],
+      "id": 4694081005,
+      "updated_at": "2026-06-04T12:35:58-04:00",
+      "requisition_id": "310",
+      "title": "Business Operations & Strategy Manager",
+      "company_name": "Tailscale",
+      "first_published": "2026-05-28T06:30:37-04:00",
+      "language": "en",
+      "application_deadline": null,
+      "content": "&lt;div class=&quot;content-intro&quot;&gt;&lt;p&gt;&lt;strong&gt;About Tailscale&amp;nbsp;&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;Tailscale is building the new Internet by delivering software that makes it easy to securely interconnect people and their devices, no matter where they are. From hobbyists to multinational corporations, teams of every size use Tailscale each day to protect their networks, share access to internal tools, and more. We&#39;re building a future for the Internet that&#39;s easy, sensible, and safe, like it used to be. Founded in 2019 and fully distributed, we&#39;re backed by Accel, CRV, Insight, Heavybit, and Uncork Capital.&lt;/p&gt;&lt;/div&gt;&lt;p&gt;&lt;span style=&quot;font-size: 12pt;&quot;&gt;&lt;strong&gt;Job Description&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;The Business Operations &amp;amp; Strategy team is Tailscale&#39;s embedded operator for the most significant cross-functional problems that don&#39;t have a natural owner, or that are critical to the long-term success of Tailscale \u2013 we diagnose, we implement, and we hand off durable solutions so the company doesn&#39;t have to solve the same problem twice.&lt;/p&gt;\n&lt;p&gt;We&#39;re looking for someone both highly competent and highly curious -- the kind of person who isn&#39;t satisfied with &quot;good enough,&quot; and who won&#39;t leave a known problem unfixed. We&#39;re a small, high-leverage team working at the intersection of commercial strategy, operational infrastructure, and company-wide execution.&amp;nbsp;&lt;/p&gt;\n&lt;p&gt;The scope of this role reflects that mandate: things like commercial strategy, international expansion, improving business systems, pricing architecture \u2014 work that&#39;s critical enough that someone has to own getting it across the finish line. If you thrive on ambiguity, care deeply about getting things done, and want to see a direct line between your work and the company&#39;s trajectory, please apply. This position reports to the Senior Manager of Business Operations &amp;amp; Strategy.&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-size: 12pt;&quot;&gt;&lt;strong&gt;Key Responsibilities&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;While projects can vary as the company evolves, below are a few examples of projects the Business Operations &amp;amp; Strategy team is working on or has worked on in the past:&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Reshaping our pricing and packaging strategy&lt;/li&gt;\n&lt;li&gt;Expanding the company to APAC through Singapore&lt;/li&gt;\n&lt;li&gt;Scoping and sizing new commercial opportunities&lt;/li&gt;\n&lt;li&gt;Driving cross-company AI adoption initiatives&lt;/li&gt;\n&lt;li&gt;Performing deep-dive data analysis to identify opportunities and mitigate challenges&lt;/li&gt;\n&lt;li&gt;Partnering with RevOps to mature our GTM infrastructure&lt;/li&gt;\n&lt;li&gt;Reducing rework and duplication in our business systems&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;span style=&quot;font-size: 12pt;&quot;&gt;&lt;strong&gt;What We Are Looking For&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;4+ years of experience in business or strategy operations, strategy consulting, investment banking, venture capital, or a similarly analytical and execution-oriented role at a high-growth tech company&lt;/li&gt;\n&lt;li&gt;Demonstrated ability to own complex, cross-functional projects from diagnosis through to completion (not just analysis and recommendations)&lt;/li&gt;\n&lt;li&gt;Strong quantitative skills; comfortable doing your own data analysis without needing a dedicated analyst&lt;/li&gt;\n&lt;li&gt;Familiarity with SaaS business models, GTM systems, and how a B2B company generates and retains revenue&lt;/li&gt;\n&lt;li&gt;Clear, concise written communication \u2014 much of the cross-functional work happens async and in writing&lt;/li&gt;\n&lt;li&gt;High tolerance for ambiguity, paired with the judgment to know when to move and when to ask&lt;/li&gt;\n&lt;li&gt;Intellectual curiosity and a low tolerance for leaving known problems unaddressed&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;span style=&quot;font-size: 12pt;&quot;&gt;&lt;strong&gt;Nice to Have&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Actual first-hand experience using Tailscale \u2014 it only takes a few minutes to set up and will greatly strengthen your application!&lt;/li&gt;\n&lt;li&gt;Experience at a PLG company and/or first-hand experience with popular PLG projects \u2014 we sell to developers, and understanding how they discover and adopt tools matters&lt;/li&gt;\n&lt;li&gt;Experience at a Series C or similarly-sized tech company (200-500 employees)&lt;/li&gt;\n&lt;li&gt;Experience with Salesforce, Snowflake, Looker, Hex, or similar GTM and analytics tooling&lt;/li&gt;\n&lt;li&gt;Comfort with AI-assisted workflows and an instinct for where automation creates real leverage versus noise&lt;/li&gt;\n&lt;li&gt;Experience at a company that has gone through a pricing transition, international expansion, or similar structural growth milestone&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;As a company, we strive to maintain fair and equitable compensation practices within our team across all roles and all levels. Tailscale&#39;s compensation package includes base salary, equity, and comprehensive benefits. The salary range displayed on each job posting represents the target range for a new hire&#39;s base salary. Individual offers may vary based on experience and skill set.&lt;/p&gt;\n&lt;p&gt;&amp;nbsp;&lt;/p&gt;&lt;div class=&quot;content-pay-transparency&quot;&gt;&lt;div class=&quot;pay-input&quot;&gt;&lt;div class=&quot;title&quot;&gt;CAN Pay Range&lt;/div&gt;&lt;div class=&quot;pay-range&quot;&gt;&lt;span&gt;$166,160&lt;/span&gt;&lt;span class=&quot;divider&quot;&gt;&amp;mdash;&lt;/span&gt;&lt;span&gt;$241,200 CAD&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;content-conclusion&quot;&gt;&lt;p&gt;&lt;em data-stringify-type=&quot;italic&quot;&gt;Frequently cited statistics show that people who identify with historically marginalized groups are likely to apply to jobs only if they meet 100% of the qualifications.&amp;nbsp;&lt;/em&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;&lt;em data-stringify-type=&quot;italic&quot;&gt;We encourage you to help us break that statistic!&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;What We Offer&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;&lt;strong&gt;An inclusive, flexible environment where you can be your authentic self.&lt;/strong&gt; We recognize the impact of diverse voices and backgrounds on the growth of our people, product, and company. And that flexibility in how and when you work empowers our team to integrate work and life.&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;A competitive total compensation package.&lt;/strong&gt; This includes a base salary, an equity incentive plan and variable commission (for quota-based roles).&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Comprehensive group benefits with no waiting period. &lt;/strong&gt;Take advantage of coverage for health, vision, dental, and more for you and your family!&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Remote first company&lt;/strong&gt;\u2014most of our teams work fully remotely. Enjoy a change of scenery wherever you can get wifi, participate in virtual and in-person social events, and leverage our corporate co-working program to visit WeWork (or other similar spaces near you). Some roles require in-office collaboration depending on team needs, which will be clearly noted in the job description.&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Connect with other Tailscalars IRL. &lt;/strong&gt;Attend our annual company retreat, participate in team off-sites, and collaborate in person with teammates across Canada, the United States, and the United Kingdom. We support intentional in-person connection through team travel and distributed collaboration.&lt;strong&gt;&lt;br&gt;&lt;/strong&gt;&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Support for your personal and professional development.&lt;/strong&gt; Grow your career thoughtfully with $1500 USD annually for professional development, or take advantage of mentorship, coaching, and internal promotion opportunities.&amp;nbsp;&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Paid time off and a healthy work-life integration.&amp;nbsp;&lt;/strong&gt;Our flexible, paid time off program supports you for any situation life throws your way, whether moving homes or travelling the world!&amp;nbsp;&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;A build-your-own home office setup. &lt;/strong&gt;You choose your own company-owned laptop (Mac or PC), receive a monthly home internet reimbursement, and $1000 USD to customize your workstation to make it your own.&amp;nbsp;&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Generous parental leave program from your first day. &lt;/strong&gt;We care about your life outside of work and encourage new parents to take advantage of parental leave top-ups for up to 26 weeks.&amp;nbsp;&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;em&gt;Tailscale is committed to providing an accessible and inclusive hiring process. If you require an accommodation at any stage of the recruitment process or related to any aspect of this role, please contact your recruiter.&lt;/em&gt;&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;Our hiring process uses AI-assisted tools to help screen and assess candidates. All hiring decisions are made by people.&lt;/em&gt;&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;Please be aware that legitimate emails from Tailscale&#39;s talent team will only originate from @tailscale.com, @greenhouse.io, and @interviews.modernloop.io email addresses. For more information about protecting yourself from impersonators and scams, please visit &lt;a href=&quot;https://tailscale.com/scam-awareness&quot;&gt;https://tailscale.com/scam-awareness&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;",
+      "departments": [
+        {
+          "id": 4044817005,
+          "name": "Operations",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ],
+      "offices": [
+        {
+          "id": 4008467005,
+          "name": "Remote (Canada)",
+          "location": "Canada",
+          "child_ids": [],
+          "parent_id": null
+        },
+        {
+          "id": 4008466005,
+          "name": "Remote (United States) ",
+          "location": "United States",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ]
+    },
+    {
+      "absolute_url": "https://job-boards.greenhouse.io/tailscale/jobs/4504091005",
+      "data_compliance": [
+        {
+          "type": "gdpr",
+          "requires_consent": false,
+          "requires_processing_consent": false,
+          "requires_retention_consent": false,
+          "retention_period": null,
+          "demographic_data_consent_applies": false
+        }
+      ],
+      "internal_job_id": 4341247005,
+      "location": {
+        "name": "Hybrid (Denver, Colorado, United States)"
+      },
+      "metadata": [
+        {
+          "id": 4536497005,
+          "name": "Employment Type",
+          "value": "Full-time",
+          "value_type": "single_select"
+        }
+      ],
+      "id": 4504091005,
+      "updated_at": "2026-06-04T11:12:11-04:00",
+      "requisition_id": "199",
+      "title": "Customer Account Executive ",
+      "company_name": "Tailscale",
+      "first_published": "2024-12-03T19:13:13-05:00",
+      "language": "en",
+      "application_deadline": null,
+      "content": "&lt;div class=&quot;content-intro&quot;&gt;&lt;p&gt;&lt;strong&gt;About Tailscale&amp;nbsp;&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;Tailscale is building the new Internet by delivering software that makes it easy to securely interconnect people and their devices, no matter where they are. From hobbyists to multinational corporations, teams of every size use Tailscale each day to protect their networks, share access to internal tools, and more. We&#39;re building a future for the Internet that&#39;s easy, sensible, and safe, like it used to be. Founded in 2019 and fully distributed, we&#39;re backed by Accel, CRV, Insight, Heavybit, and Uncork Capital.&lt;/p&gt;&lt;/div&gt;&lt;p&gt;&lt;span style=&quot;font-size: 12pt;&quot;&gt;&lt;strong&gt;Job Description&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;Join our rapidly growing Sales team where you will play an important role at one of the fastest growing companies in the Developer Security space.&lt;/p&gt;\n&lt;p&gt;As a Customer Account Executive, you will be responsible for helping expand and renew current customer accounts. You will focus on finding additional use cases, educating the client base on new feature releases, and ensuring the successful adoption of Tailscale across all of your existing customer accounts. You will partner closely with the Solutions Engineering team, as well as collaborate with the Customer Success, Support, Marketing, and Product teams.&amp;nbsp;&lt;/p&gt;\n&lt;p&gt;We&#39;re an energetic company with a wide variety of backgrounds. We coach each other, share feedback, and collaborate to maximize our performance and earning potential, all the while aligning with our customers&#39; needs.&amp;nbsp;&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-size: 12pt;&quot;&gt;&lt;strong&gt;Key Responsibilities&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Become an expert in how Tailscale helps our customers&lt;/li&gt;\n&lt;li&gt;Build a credible pipeline every quarter by engaging with clients on upsells and renewals&lt;/li&gt;\n&lt;li&gt;Own an upsell and renewal number across your accounts&lt;/li&gt;\n&lt;li&gt;Help educate customers on the value of Tailscale throughout the evaluation &amp;amp; adoption cycle&lt;/li&gt;\n&lt;li&gt;Generate short-term results while maintaining annual pipeline coverage&lt;/li&gt;\n&lt;li&gt;Provide accurate weekly forecasting &amp;amp; revenue delivery&lt;/li&gt;\n&lt;li&gt;Create mutual action/success plans with prospective and existing customers where appropriate to help them evaluate and expand their usage of the Tailscale product&lt;/li&gt;\n&lt;li&gt;Participation in video-recorded customer meetings is a core part of this role. Recordings are used for training, collaboration, and quality improvement.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;span style=&quot;font-size: 12pt;&quot;&gt;&lt;strong&gt;What We Are Looking For&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Up to 1 year of quota-carrying or closing experience, in an AE or an AM role&lt;/li&gt;\n&lt;li&gt;A strong desire to join a high-growth software startup in a fully remote role&lt;/li&gt;\n&lt;li&gt;Has sold developer and/or technical products, especially in a product-led growth (PLG) motion&lt;/li&gt;\n&lt;li&gt;Experience presenting to senior managers and executives&lt;/li&gt;\n&lt;li&gt;The ability to manage many opportunities simultaneously at various stages,&amp;nbsp; coupled with a strong track record of meeting and exceeding quota&lt;/li&gt;\n&lt;li&gt;Experience using Gong, or similar, to collaborate internally and manage pipeline&lt;/li&gt;\n&lt;li&gt;Experience partnering with a Sales Engineering team, support, and customer success team to drive positive outcomes for clients&lt;/li&gt;\n&lt;li&gt;Proactive from lead to close - the hiring manager for this role is Ike Dunaway. If this opportunity really excites you, please don\u2019t just apply on the website. Prospect thoughtfully and tell us why you\u2019re the best candidate for this position.&lt;/li&gt;\n&lt;li&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;This role is based in Denver and is hybrid preferred (3 days/week in-office). &lt;span style=&quot;color: rgb(255, 255, 255);&quot;&gt;#LI-Hybrid&lt;/span&gt;&lt;/strong&gt;&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;As a company, we strive to maintain fair and equitable compensation practices within our team across all roles and all levels. Tailscale&#39;s compensation package includes base salary, equity, and comprehensive benefits. The salary range displayed on each job posting represents the target range for a new hire&#39;s base salary. Individual offers may vary based on experience and skill set.&lt;/p&gt;&lt;div class=&quot;content-pay-transparency&quot;&gt;&lt;div class=&quot;pay-input&quot;&gt;&lt;div class=&quot;description&quot;&gt;&lt;p&gt;For this position, our pay ranges reflect target OTE (on target earnings), inclusive of base salary and variable compensation tied to the attainment of quarterly sales targets.&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;title&quot;&gt;US Pay Range (OTE)&lt;/div&gt;&lt;div class=&quot;pay-range&quot;&gt;&lt;span&gt;$100,000&lt;/span&gt;&lt;span class=&quot;divider&quot;&gt;&amp;mdash;&lt;/span&gt;&lt;span&gt;$125,000 USD&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;content-conclusion&quot;&gt;&lt;p&gt;&lt;em data-stringify-type=&quot;italic&quot;&gt;Frequently cited statistics show that people who identify with historically marginalized groups are likely to apply to jobs only if they meet 100% of the qualifications.&amp;nbsp;&lt;/em&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;&lt;em data-stringify-type=&quot;italic&quot;&gt;We encourage you to help us break that statistic!&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;What We Offer&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;&lt;strong&gt;An inclusive, flexible environment where you can be your authentic self.&lt;/strong&gt; We recognize the impact of diverse voices and backgrounds on the growth of our people, product, and company. And that flexibility in how and when you work empowers our team to integrate work and life.&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;A competitive total compensation package.&lt;/strong&gt; This includes a base salary, an equity incentive plan and variable commission (for quota-based roles).&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Comprehensive group benefits with no waiting period. &lt;/strong&gt;Take advantage of coverage for health, vision, dental, and more for you and your family!&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Remote first company&lt;/strong&gt;\u2014most of our teams work fully remotely. Enjoy a change of scenery wherever you can get wifi, participate in virtual and in-person social events, and leverage our corporate co-working program to visit WeWork (or other similar spaces near you). Some roles require in-office collaboration depending on team needs, which will be clearly noted in the job description.&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Connect with other Tailscalars IRL. &lt;/strong&gt;Attend our annual company retreat, participate in team off-sites, and collaborate in person with teammates across Canada, the United States, and the United Kingdom. We support intentional in-person connection through team travel and distributed collaboration.&lt;strong&gt;&lt;br&gt;&lt;/strong&gt;&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Support for your personal and professional development.&lt;/strong&gt; Grow your career thoughtfully with $1500 USD annually for professional development, or take advantage of mentorship, coaching, and internal promotion opportunities.&amp;nbsp;&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Paid time off and a healthy work-life integration.&amp;nbsp;&lt;/strong&gt;Our flexible, paid time off program supports you for any situation life throws your way, whether moving homes or travelling the world!&amp;nbsp;&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;A build-your-own home office setup. &lt;/strong&gt;You choose your own company-owned laptop (Mac or PC), receive a monthly home internet reimbursement, and $1000 USD to customize your workstation to make it your own.&amp;nbsp;&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Generous parental leave program from your first day. &lt;/strong&gt;We care about your life outside of work and encourage new parents to take advantage of parental leave top-ups for up to 26 weeks.&amp;nbsp;&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;em&gt;Tailscale is committed to providing an accessible and inclusive hiring process. If you require an accommodation at any stage of the recruitment process or related to any aspect of this role, please contact your recruiter.&lt;/em&gt;&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;Our hiring process uses AI-assisted tools to help screen and assess candidates. All hiring decisions are made by people.&lt;/em&gt;&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;Please be aware that legitimate emails from Tailscale&#39;s talent team will only originate from @tailscale.com, @greenhouse.io, and @interviews.modernloop.io email addresses. For more information about protecting yourself from impersonators and scams, please visit &lt;a href=&quot;https://tailscale.com/scam-awareness&quot;&gt;https://tailscale.com/scam-awareness&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;",
+      "departments": [
+        {
+          "id": 4019621005,
+          "name": "Sales",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ],
+      "offices": [
+        {
+          "id": 4053187005,
+          "name": "Hybrid (Denver)",
+          "location": "Denver, Colorado, United States",
+          "child_ids": [],
+          "parent_id": null
+        }
+      ]
+    }
+  ]
+}

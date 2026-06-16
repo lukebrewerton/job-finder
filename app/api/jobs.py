@@ -12,6 +12,7 @@ from app.db import get_session
 from app.models.cv import CV
 from app.models.job import Job
 from app.models.job_score import JobScore
+from app.models.source import Source
 
 router = APIRouter(prefix="/api/jobs", tags=["jobs"])
 
@@ -67,13 +68,15 @@ def _build_query(
         and_(JobScore.job_id == Job.id, JobScore.cv_id == cv_id) if cv_id is not None else false()
     )
 
-    # Inner: pick one row per dedup_key, preferring scored siblings.
+    # Inner: pick one row per dedup_key, preferring ATS sources then scored siblings.
     dedup_inner = (
         select(Job.id.label("job_id"))
+        .join(Source, Source.id == Job.source_id)
         .outerjoin(JobScore, cv_join_cond)
         .distinct(Job.dedup_key)
         .order_by(
             Job.dedup_key,
+            Source.authority.desc(),  # ATS rows beat aggregators
             (JobScore.fit_score.isnot(None)).desc(),
             JobScore.fit_score.desc().nulls_last(),
             Job.fetched_at.desc(),

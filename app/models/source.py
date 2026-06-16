@@ -12,8 +12,9 @@ class Source(Base):
     __tablename__ = "sources"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    type: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    type: Mapped[str] = mapped_column(String, nullable=False)
     name: Mapped[str] = mapped_column(String, nullable=False)
+    authority: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     config: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     cadence_minutes: Mapped[int] = mapped_column(Integer, nullable=False, default=60)

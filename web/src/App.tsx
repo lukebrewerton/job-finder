@@ -2,10 +2,11 @@ import { useState } from "react";
 import CVs from "./views/CVs";
 import Jobs from "./views/Jobs";
 import Profiles from "./views/Profiles";
+import Sources from "./views/Sources";
 import { useQuery } from "@tanstack/react-query";
 import type { JobsPage } from "./types";
 
-type Tab = "jobs" | "profiles" | "cvs";
+type Tab = "jobs" | "profiles" | "cvs" | "sources";
 
 async function fetchJobCount(): Promise<number> {
   const res = await fetch("/api/jobs?page_size=1");
@@ -22,6 +23,7 @@ export default function App() {
     { key: "jobs", label: `Jobs${jobCount != null ? ` (${jobCount})` : ""}` },
     { key: "profiles", label: "Profiles" },
     { key: "cvs", label: "CVs" },
+    { key: "sources", label: "Sources" },
   ];
 
   return (
@@ -53,6 +55,7 @@ export default function App() {
         {tab === "jobs" && <Jobs />}
         {tab === "profiles" && <Profiles />}
         {tab === "cvs" && <CVs />}
+        {tab === "sources" && <Sources />}
       </main>
     </div>
   );

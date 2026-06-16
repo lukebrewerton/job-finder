@@ -42,6 +42,17 @@ export type Profile = {
   active: boolean;
 };
 
+export type Source = {
+  id: string;
+  type: string;
+  name: string;
+  config: Record<string, unknown>;
+  enabled: boolean;
+  cadence_minutes: number;
+  authority: number;
+  last_run_at: string | null;
+};
+
 export type CVParsed = {
   skills: string[];
   roles: string[];

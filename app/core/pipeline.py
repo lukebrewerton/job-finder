@@ -6,7 +6,7 @@ import logging
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
@@ -21,11 +21,18 @@ from app.models.source import Source
 log = logging.getLogger(__name__)
 
 
-def run_fetch(source_key: str, titles: list[str], session: Session) -> dict[str, int | str]:
-    source = session.scalars(select(Source).where(Source.type == source_key)).first()
-    if source is None:
+def run_fetch(source_key: str, titles: list[str], session: Session) -> list[dict[str, int | str]]:
+    """Run fetch for all enabled sources with the given adapter type."""
+    sources = session.scalars(
+        select(Source).where(Source.type == source_key, Source.enabled.is_(True))
+    ).all()
+    if not sources:
         raise ValueError(f"No source row found for type={source_key!r}. Run `make seed` first.")
+    return [run_fetch_source(source, titles, session) for source in sources]
 
+
+def run_fetch_source(source: Source, titles: list[str], session: Session) -> dict[str, int | str]:
+    """Run fetch for a single Source row."""
     ctx = FetchContext(
         titles=titles,
         locations=None,
@@ -46,7 +53,7 @@ def run_fetch(source_key: str, titles: list[str], session: Session) -> dict[str,
     fetched = new = updated = skipped = 0
     new_job_ids: list[uuid.UUID] = []
 
-    for raw in get_adapter(source_key).fetch(ctx):
+    for raw in get_adapter(source.type).fetch(ctx):
         fetched += 1
         content_hash = make_content_hash(raw.title, raw.company, raw.location)
         dedup_key = make_dedup_key(raw.title, raw.company, raw.location)
@@ -114,20 +121,21 @@ def run_fetch(source_key: str, titles: list[str], session: Session) -> dict[str,
     source.last_run_at = now
     session.commit()
 
-    _enqueue_scoring(session, new_job_ids)
+    _enqueue_scoring(session, new_job_ids, source.authority)
 
     counts: dict[str, int | str] = {
-        "source": source_key,
+        "source": source.type,
+        "source_name": source.name,
         "fetched": fetched,
         "new": new,
         "updated": updated,
         "skipped": skipped,
     }
-    log.info("fetch complete", extra=counts)
+    log.info("fetch complete", extra={"source": source.type, "fetched": fetched, "new": new})
     return counts
 
 
-def _enqueue_scoring(session: Session, job_ids: list[uuid.UUID]) -> None:
+def _enqueue_scoring(session: Session, job_ids: list[uuid.UUID], source_authority: int) -> None:
     if not job_ids:
         return
 
@@ -138,25 +146,32 @@ def _enqueue_scoring(session: Session, job_ids: list[uuid.UUID]) -> None:
         log.info("no default CV set — skipping scoring enqueue for %d new jobs", len(job_ids))
         return
 
-    # Look up each new job's dedup_key so we can skip jobs whose logical
-    # duplicate has already been scored (avoids N×LLM calls for the same role).
+    # New jobs with their source authority (passed in — no need to re-join).
     new_job_rows = session.execute(select(Job.id, Job.dedup_key).where(Job.id.in_(job_ids))).all()
-
     new_dedup_keys = [row.dedup_key for row in new_job_rows]
-    already_scored: set[str] = set(
-        session.scalars(
-            select(Job.dedup_key)
+
+    # For dedup_keys that already have a scored sibling, record the maximum authority
+    # of the scored sibling's source. We only skip enqueueing if a sibling of equal or
+    # higher authority is already scored — an ATS job must always be scored even when
+    # an aggregator duplicate was scored first.
+    scored_max_authority: dict[str, int] = {
+        str(row[0]): int(row[1])
+        for row in session.execute(
+            select(Job.dedup_key, func.max(Source.authority))
             .join(JobScore, JobScore.job_id == Job.id)
+            .join(Source, Source.id == Job.source_id)
             .where(JobScore.cv_id == default_cv_id)
             .where(Job.dedup_key.in_(new_dedup_keys))
+            .group_by(Job.dedup_key)
         ).all()
-    )
+    }
 
     cv_id_str = str(default_cv_id)
     enqueued = 0
     for row in new_job_rows:
-        if row.dedup_key in already_scored:
-            continue
+        existing_auth = scored_max_authority.get(row.dedup_key, -1)
+        if existing_auth >= source_authority:
+            continue  # sibling of equal-or-higher authority already scored
         score_job_task.delay(str(row.id), cv_id_str)
         enqueued += 1
 

@@ -1,3 +1,4 @@
+import app.tasks.fetch as _fetch  # noqa: F401 — side-effect: registers fetch_source_by_id task
 import app.tasks.scoring as _scoring  # noqa: F401 — side-effect: registers score_job task
 from app.workers import celery_app
 

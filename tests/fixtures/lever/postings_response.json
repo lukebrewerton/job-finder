@@ -1,0 +1,47 @@
+[
+  {
+    "id": "a1b2c3d4-0001-0001-0001-000000000001",
+    "text": "Senior Platform Engineer",
+    "state": "published",
+    "hostedUrl": "https://jobs.lever.co/acme-corp/a1b2c3d4-0001-0001-0001-000000000001",
+    "applyUrl": "https://jobs.lever.co/acme-corp/a1b2c3d4-0001-0001-0001-000000000001/apply",
+    "categories": {
+      "commitment": "Full-time",
+      "department": "Engineering",
+      "location": "Remote",
+      "team": "Infrastructure",
+      "level": "Senior"
+    },
+    "workplaceType": "remote",
+    "description": "<div><p>We are looking for a Senior Platform Engineer to help us build and scale our infrastructure.</p><p>You will work on Kubernetes, Terraform, and AWS to support our growing engineering organisation.</p></div>",
+    "descriptionPlain": "We are looking for a Senior Platform Engineer to help us build and scale our infrastructure.\n\nYou will work on Kubernetes, Terraform, and AWS to support our growing engineering organisation.",
+    "lists": [
+      {
+        "text": "Requirements",
+        "content": "<li>5+ years of infrastructure experience</li><li>Strong Kubernetes knowledge</li><li>Experience with Terraform</li>"
+      }
+    ],
+    "createdAt": 1718000000000,
+    "company": "Acme Corp"
+  },
+  {
+    "id": "a1b2c3d4-0002-0002-0002-000000000002",
+    "text": "Cloud Infrastructure Engineer",
+    "state": "published",
+    "hostedUrl": "https://jobs.lever.co/acme-corp/a1b2c3d4-0002-0002-0002-000000000002",
+    "applyUrl": "https://jobs.lever.co/acme-corp/a1b2c3d4-0002-0002-0002-000000000002/apply",
+    "categories": {
+      "commitment": "Full-time",
+      "department": "Engineering",
+      "location": "London, UK",
+      "team": "Cloud",
+      "level": "Mid"
+    },
+    "workplaceType": "hybrid",
+    "description": "<div><p>Join our cloud team in London. This is a hybrid role with 2 days in the office per week.</p></div>",
+    "descriptionPlain": "Join our cloud team in London. This is a hybrid role with 2 days in the office per week.",
+    "lists": [],
+    "createdAt": 1718100000000,
+    "company": "Acme Corp"
+  }
+]

@@ -36,30 +36,34 @@ def cmd_fetch(args: argparse.Namespace) -> int:
                         seen.add(t)
                         titles.append(t)
 
-        counts = run_fetch(args.source, titles, session)
+        results = run_fetch(args.source, titles, session)
 
-    print(
-        f"[fetch] source={counts['source']!r} "
-        f"fetched={counts['fetched']} new={counts['new']} "
-        f"updated={counts['updated']} skipped={counts['skipped']}"
-    )
+    for counts in results:
+        print(
+            f"[fetch] source={counts['source']!r} name={counts['source_name']!r} "
+            f"fetched={counts['fetched']} new={counts['new']} "
+            f"updated={counts['updated']} skipped={counts['skipped']}"
+        )
     return 0
 
 
 def cmd_seed(args: argparse.Namespace) -> int:  # noqa: ARG001
+    from sqlalchemy import select
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
     from app.db import SessionLocal
     from app.models.source import Source
     from app.models.user import User
 
-    sources = [
+    # Aggregator sources (authority=0): one row per adapter, upserted by type+name.
+    aggregator_sources = [
         {
             "type": "adzuna",
             "name": "Adzuna UK",
             "config": {},
             "enabled": True,
             "cadence_minutes": 60,
+            "authority": 0,
         },
         {
             "type": "reed",
@@ -67,6 +71,7 @@ def cmd_seed(args: argparse.Namespace) -> int:  # noqa: ARG001
             "config": {},
             "enabled": True,
             "cadence_minutes": 120,
+            "authority": 0,
         },
         {
             "type": "himalayas",
@@ -74,6 +79,7 @@ def cmd_seed(args: argparse.Namespace) -> int:  # noqa: ARG001
             "config": {},
             "enabled": True,
             "cadence_minutes": 120,
+            "authority": 0,
         },
         {
             "type": "remotive",
@@ -81,6 +87,7 @@ def cmd_seed(args: argparse.Namespace) -> int:  # noqa: ARG001
             "config": {},
             "enabled": True,
             "cadence_minutes": 120,
+            "authority": 0,
         },
         {
             "type": "remoteok",
@@ -88,6 +95,7 @@ def cmd_seed(args: argparse.Namespace) -> int:  # noqa: ARG001
             "config": {},
             "enabled": True,
             "cadence_minutes": 120,
+            "authority": 0,
         },
         {
             "type": "hn_whoishiring",
@@ -95,6 +103,7 @@ def cmd_seed(args: argparse.Namespace) -> int:  # noqa: ARG001
             "config": {},
             "enabled": True,
             "cadence_minutes": 1440,
+            "authority": 0,
         },
     ]
 
@@ -103,9 +112,12 @@ def cmd_seed(args: argparse.Namespace) -> int:  # noqa: ARG001
     ]
 
     with SessionLocal() as session:
-        for s in sources:
-            stmt = pg_insert(Source).values(**s).on_conflict_do_nothing(index_elements=["type"])
-            session.execute(stmt)
+        for s in aggregator_sources:
+            existing = session.scalars(
+                select(Source).where(Source.type == s["type"], Source.name == s["name"])
+            ).first()
+            if existing is None:
+                session.add(Source(**s))
 
         for u in users:
             stmt = pg_insert(User).values(**u).on_conflict_do_nothing(index_elements=["email"])
@@ -113,7 +125,8 @@ def cmd_seed(args: argparse.Namespace) -> int:  # noqa: ARG001
 
         session.commit()
 
-    print(f"[seed] upserted {len(sources)} source(s), {len(users)} user(s).")
+    print(f"[seed] seeded {len(aggregator_sources)} aggregator source(s), {len(users)} user(s).")
+    print("[seed] Add ATS sources (greenhouse/lever/ashby/jsonld) via the admin UI.")
     return 0
 
 
