@@ -24,7 +24,7 @@ class AnthropicProvider:
     def generate_json(self, prompt: str, schema: dict) -> dict:
         response = self._client.messages.create(
             model=self._model,
-            max_tokens=1024,
+            max_tokens=2048,
             tools=[
                 {
                     "name": "output",

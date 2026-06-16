@@ -27,6 +27,7 @@ export default function CVs() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const { data: cvs, isLoading } = useQuery({ queryKey: ["cvs"], queryFn: fetchCVs });
 
@@ -40,9 +41,11 @@ export default function CVs() {
     if (!file) return;
     setUploading(true);
     setError(null);
+    setSuccess(null);
     try {
-      await uploadCV(file);
+      const cv = await uploadCV(file);
       qc.invalidateQueries({ queryKey: ["cvs"] });
+      setSuccess(`CV "${cv.name}" uploaded and parsed successfully.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed.");
     } finally {
@@ -73,6 +76,7 @@ export default function CVs() {
           </p>
         )}
         {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+        {success && <p className="mt-2 text-xs text-teal-700">{success}</p>}
       </div>
 
       {isLoading && <p className="text-slate-500">Loading CVs…</p>}
@@ -110,44 +114,52 @@ export default function CVs() {
             </div>
 
             <div className="mt-3 space-y-3">
-              <div>
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
-                  Summary
-                </p>
-                <p className="text-sm text-slate-600">{cv.parsed.summary}</p>
-              </div>
-
-              <div>
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
-                  Skills
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {cv.parsed.skills.map((s) => (
-                    <span
-                      key={s}
-                      className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-600"
-                    >
-                      {s}
-                    </span>
-                  ))}
+              {cv.parsed.summary && (
+                <div>
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+                    Summary
+                  </p>
+                  <p className="text-sm text-slate-600">{cv.parsed.summary}</p>
                 </div>
-              </div>
+              )}
 
-              <div>
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
-                  Roles
+              {Array.isArray(cv.parsed.skills) && cv.parsed.skills.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+                    Skills
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {cv.parsed.skills.map((s) => (
+                      <span
+                        key={s}
+                        className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-600"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {Array.isArray(cv.parsed.roles) && cv.parsed.roles.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+                    Roles
+                  </p>
+                  <ul className="list-disc list-inside text-sm text-slate-600">
+                    {cv.parsed.roles.map((r) => (
+                      <li key={r}>{r}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {cv.parsed.years_experience != null && (
+                <p className="text-xs text-slate-400">
+                  {cv.parsed.years_experience} year
+                  {cv.parsed.years_experience !== 1 ? "s" : ""} of experience
                 </p>
-                <ul className="list-disc list-inside text-sm text-slate-600">
-                  {cv.parsed.roles.map((r) => (
-                    <li key={r}>{r}</li>
-                  ))}
-                </ul>
-              </div>
-
-              <p className="text-xs text-slate-400">
-                {cv.parsed.years_experience} year{cv.parsed.years_experience !== 1 ? "s" : ""} of
-                experience
-              </p>
+              )}
             </div>
           </div>
         ))}
