@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Environment / secrets
+.env
+*.env
+!.env.example
+
+# Node / frontend
+web/node_modules/
+web/dist/
+
+# Celery
+celerybeat-schedule
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/

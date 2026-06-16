@@ -1,0 +1,108 @@
+name: job-finder
+
+# Production stack for a Portainer Git stack (Repository → this file → auto-update).
+# Standalone (does not merge with docker-compose.yml). No bind mounts, no reload.
+# Secrets come from the Portainer stack's environment variables — NOT from the repo.
+# `${VAR:?message}` fails the deploy loudly if a required secret is missing.
+
+x-backend-env: &backend-env
+  ENVIRONMENT: production
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  POSTGRES_USER: ${POSTGRES_USER:?set in Portainer}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in Portainer}
+  POSTGRES_DB: ${POSTGRES_DB:?set in Portainer}
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: "5432"
+  REDIS_URL: redis://redis:6379/0
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  LLM_MODEL: ${LLM_MODEL:-claude-sonnet-4-6}
+
+x-build: &build
+  context: .
+  dockerfile: Dockerfile
+  target: prod
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set in Portainer}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in Portainer}
+      POSTGRES_DB: ${POSTGRES_DB:?set in Portainer}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  # One-shot: apply migrations before the API starts, then exit.
+  migrate:
+    build: *build
+    command: alembic upgrade head
+    environment: *backend-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build: *build
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+    environment: *backend-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    build: *build
+    command: celery -A app.workers.celery_app worker --loglevel=INFO
+    environment: *backend-env
+    depends_on:
+      api:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  beat:
+    build: *build
+    command: celery -A app.workers.celery_app beat --loglevel=INFO
+    environment: *backend-env
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      target: prod
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  pgdata:

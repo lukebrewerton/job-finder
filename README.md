@@ -1,93 +1,89 @@
 # Job Finder
 
+A self-hostable job aggregator and CV-matching tool. It pulls roles from multiple
+sources (aggregators, remote boards, company ATS endpoints, bespoke career pages),
+normalises them into a common shape, scores each against your CV, and serves a
+filterable web UI. Single user to start, multi-tenant by design.
 
+> Built as a portfolio piece demonstrating adapter-driven ingestion, a clean
+> ingestion/serving seam at the database, deterministic-first design with the LLM
+> fenced into three well-defined roles, and a local-dev → GitOps deployment story.
 
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+## Architecture
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/brewerton/workloads/job-finder.git
-git branch -M main
-git push -uf origin main
+Celery Beat ─▶ fetch tasks ─▶ SourceAdapter.fetch ─▶ normalise ─▶ dedup ─▶ Postgres
+                                                                              │
+                                                              LLM scoring (cached)
+                                                                              ▼
+FastAPI ──reads──▶ Postgres ◀──reads── React SPA (browse / filter / triage)
 ```
 
-## Integrate with your tools
+- **Backend** — FastAPI, SQLAlchemy 2 (sync), Alembic, Celery + Beat.
+- **Data** — PostgreSQL (single source of truth and the seam between ingestion and UI).
+- **Frontend** — React + Vite + TypeScript, TanStack Query/Table, Tailwind.
+- **Sources** — pluggable adapters behind one interface; adding one is a new file plus
+  a registry entry.
 
-* [Set up project integrations](https://gitlab.com/brewerton/workloads/job-finder/-/settings/integrations)
+See [`docs/SPEC.md`](docs/SPEC.md) for the full design and the phased build plan, and
+[`CLAUDE.md`](CLAUDE.md) for the working conventions.
 
-## Collaborate with your team
+## Quickstart (local development)
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+```bash
+cp .env.example .env      # adjust as needed
+make lock                 # generate uv.lock (first run only)
+make up                   # build and run the dev stack with hot reload
+```
 
-## Test and Deploy
+Then:
 
-Use the built-in continuous integration in GitLab.
+- Web UI — http://localhost:5173
+- API health — http://localhost:8000/api/health
+- API readiness (DB + Redis) — http://localhost:8000/api/ready
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+Common tasks:
 
-***
+```bash
+make test     # pytest
+make lint     # ruff + black --check + mypy
+make format   # ruff --fix + black
+make migrate  # alembic upgrade head
+```
 
-# Editing this README
+## Deployment (Portainer GitOps)
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+Production runs from [`docker-compose.prod.yml`](docker-compose.prod.yml) as a
+**Portainer Git stack**: point a stack at this repo + that file, set the secrets as
+stack environment variables (never in the repo), and enable auto-update. Pushing a
+known-good state redeploys it. Migrations run as a one-shot `migrate` service before
+the API starts. The same repo deploys identically wherever Portainer runs — local now,
+the Proxmox lab later.
 
-## Suggestions for a good README
+## Repository & CI
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+- **Canonical: GitLab** (`brewerton/workloads/job-finder`, private). The source of
+  truth; development and deployment happen here.
+- **Mirror: GitHub** (public, portfolio). A one-way **push mirror** from GitLab
+  (GitLab → Settings → Repository → *Mirroring repositories*). You push to GitLab;
+  GitHub follows. Never develop on the mirror.
 
-## Name
-Choose a self-explaining name for your project.
+Two CI definitions, by design — not duplication, different scope:
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+- **`.gitlab-ci.yml` (primary)** — lint, test, build, and trigger the Portainer
+  GitOps deploy. Runs on GitLab only. Secrets come from GitLab CI/CD variables, never
+  the file.
+- **`.github/workflows/ci.yml` (mirror)** — lint + test only, no deploy. Provides the
+  public "passing" badge on the portfolio repo. Runs on GitHub when the mirror updates.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+The `.gitlab-ci.yml` is inert on GitHub (GitHub ignores it) — harmless, and useful as
+evidence of the pipeline work.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+## Tooling
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+Three tools, three jobs: **black** formats, **ruff** lints, **mypy** type-checks.
+Managed with **uv**. mypy is configured pragmatically and tightened over time.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+## Status
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Phase 0 (scaffold) complete. See the phase plan in [`docs/SPEC.md`](docs/SPEC.md).

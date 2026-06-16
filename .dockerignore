@@ -1,0 +1,16 @@
+.git
+.gitignore
+.venv
+__pycache__
+*.py[cod]
+.mypy_cache
+.ruff_cache
+.pytest_cache
+.env
+*.env
+!.env.example
+web/node_modules
+web/dist
+docs
+README.md
+.github
