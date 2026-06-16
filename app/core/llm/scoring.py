@@ -111,10 +111,16 @@ def score_job(
         f"Years of experience: {years}\n"
         f"Recent roles: {roles_str}\n"
         f"Skills: {skills_str}\n\n"
-        f"Assess capability fit only (0–100). Do not consider job-seeking probability, "
-        f"employer preferences, or likelihood of getting an interview — score purely on "
-        f"whether the candidate's skills and experience match what the job requires.\n"
-        f"Use British English in the rationale."
+        f"Assess capability fit only — do not factor in job-hunting probability, "
+        f"employer preferences, or likelihood of getting an interview.\n\n"
+        f"Return a JSON object with exactly these fields:\n"
+        f"- fit_score: integer 0-100 (80+ strong match, 50-79 workable, <50 significant gaps)\n"
+        f"- matched_skills: flat list of skill strings from the CV that match the job\n"
+        f"- gaps: flat list of strings, skills the job requires that are absent from the CV\n"
+        f"- flags: list of zero or more strings, each must be one of: "
+        f"stretch_role, missing_must_have, below_salary_target, "
+        f"seniority_mismatch, remote_mismatch\n"
+        f"- rationale: string, 2-4 sentences in British English explaining the score"
     )
 
     raw = provider.generate_json(prompt, _SCHEMA)
