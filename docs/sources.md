@@ -7,6 +7,8 @@ Job Finder pulls roles from two categories of source:
 
 Sources are managed through the web UI (Sources tab) or seeded via `make seed`. A source has a name, a type (the adapter key), an enabled flag, and a fetch cadence in minutes. Targeted sources also carry a `config` object with type-specific values.
 
+**Sources are global** — they are shared across all users, not per-account. All users see jobs from the same pool. Per-user isolation is at the triage and scoring layer: each user has their own CV, search profile, fit scores, and triage state. If you are running a multi-tenant instance and want different users to see different job pools, the recommended approach is to run separate instances.
+
 ---
 
 ## Breadth sources

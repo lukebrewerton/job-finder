@@ -88,16 +88,8 @@ deployments.
   (GitLab → Settings → Repository → *Mirroring repositories*). You push to GitLab;
   GitHub follows. Never develop on the mirror.
 
-Two CI definitions, by design — not duplication, different scope:
-
-- **`.gitlab-ci.yml` (primary)** — lint, test, build, and trigger the Portainer
-  GitOps deploy. Runs on GitLab only. Secrets come from GitLab CI/CD variables, never
-  the file.
-- **`.github/workflows/ci.yml` (mirror)** — lint + test only, no deploy. Provides the
-  public "passing" badge on the portfolio repo. Runs on GitHub when the mirror updates.
-
-The `.gitlab-ci.yml` is inert on GitHub (GitHub ignores it) — harmless, and useful as
-evidence of the pipeline work.
+CI runs on GitLab only (`.gitlab-ci.yml`) — lint, type-check, and test. GitHub is a
+mirror and carries no CI; GitHub Actions are not used.
 
 ## Tooling
 

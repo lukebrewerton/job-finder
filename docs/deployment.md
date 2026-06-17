@@ -196,6 +196,26 @@ The Active tab automatically hides anything you have rejected or ignored. Shortl
 
 ---
 
+## Data persistence and backups
+
+All persistent data lives in the `pgdata` Docker volume (PostgreSQL). This includes every job record, triage state, CV, score, and user account. If the volume is deleted the data is gone.
+
+Back up with `pg_dump` against the running container:
+
+```bash
+docker exec job-finder-postgres-1 pg_dump -U jobfinder jobfinder | gzip > backup-$(date +%F).sql.gz
+```
+
+Restore:
+
+```bash
+gunzip -c backup-2026-01-01.sql.gz | docker exec -i job-finder-postgres-1 psql -U jobfinder jobfinder
+```
+
+Consider automating this with a cron job or a sidecar backup container (e.g. `prodrigestivill/postgres-backup-local`) if your homelab doesn't already handle volume snapshots.
+
+---
+
 ## Upgrades and migrations
 
 Alembic migrations run automatically on every deploy via the `migrate` service. Pulling a new version of the code and redeploying is all that's needed; migrations are applied before the API starts. Downgrade scripts exist for every migration if a rollback is needed.
