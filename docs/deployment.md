@@ -180,6 +180,22 @@ The nginx config inside the container proxies `/api/` to `api:8000` on the inter
 
 ---
 
+## First-time setup
+
+Once the stack is up and you've signed in, the setup order matters:
+
+1. **Profile** — go to the Profile tab and create a search profile. Enter your canonical role (e.g. "Platform Engineer") and seniority level. The LLM generates title variation keywords automatically from these; you can edit the list afterwards if needed.
+
+2. **CVs** — go to the CVs tab and upload your CV (PDF, DOCX, or plain text). It is parsed immediately. Scoring against jobs runs in the background once jobs are loaded — uploading a new CV later triggers a full re-score automatically.
+
+3. **Sources** — go to the Sources tab and add at least one source. Hit **Run now** on the source row to fetch immediately rather than waiting for the scheduled cadence. See [`docs/sources.md`](sources.md) for which sources need credentials and how to configure targeted ATS sources.
+
+4. **Jobs** — roles appear in the Active tab as soon as a fetch completes. Fit scores arrive shortly after as the worker processes them. Click any row to open the detail panel: fit score, role summary, matched skills, gaps, and triage controls (shortlist, mark as applied, reject, ignore).
+
+The Active tab automatically hides anything you have rejected or ignored. Shortlisted and Applied jobs have their own tabs.
+
+---
+
 ## Upgrades and migrations
 
 Alembic migrations run automatically on every deploy via the `migrate` service. Pulling a new version of the code and redeploying is all that's needed; migrations are applied before the API starts. Downgrade scripts exist for every migration if a rollback is needed.

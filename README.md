@@ -58,6 +58,17 @@ make format   # ruff --fix + black
 make migrate  # alembic upgrade head
 ```
 
+## Getting started
+
+Once the stack is running (dev or prod), the setup order matters:
+
+1. **Profile** — create a search profile with your canonical role (e.g. "Platform Engineer") and seniority. The LLM generates title variation keywords automatically; you can edit them afterwards.
+2. **CVs** — upload your CV. It is parsed immediately; scoring runs in the background once jobs are loaded.
+3. **Sources** — add at least one source and hit **Run now** to fetch immediately, or wait for the scheduled cadence.
+4. **Jobs** — roles appear in the Active tab. Scores arrive shortly after via the worker. Click any row for the detail panel: fit score, role summary, matched skills, gaps, and triage controls.
+
+The Active tab hides anything you have rejected or ignored. Shortlisted and Applied have their own tabs.
+
 ## Deployment
 
 Production runs from [`docker-compose.prod.yml`](docker-compose.prod.yml). All secrets
