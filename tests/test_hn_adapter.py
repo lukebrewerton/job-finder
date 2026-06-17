@@ -135,6 +135,9 @@ def test_fetch_skips_when_no_thread() -> None:
         config={},
         since=None,
     )
-    with patch("app.core.sources.hn_whoishiring._find_thread_id", return_value=None):
+    with (
+        patch("app.core.sources.hn_whoishiring._find_thread_id", return_value=None),
+        patch("app.core.llm.provider.get_llm_provider", return_value=None),
+    ):
         results = list(HNWhoIsHiringAdapter().fetch(ctx))
     assert results == []

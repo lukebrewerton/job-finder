@@ -126,7 +126,7 @@ def test_dedup_query_surfaces_ats_job_not_aggregator_for_shared_dedup_key() -> N
 
         try:
             cv_id = _get_real_default_cv_id(session)
-            q = _build_query(cv_id, None, None, None, None, False, None)
+            q = _build_query(cv_id, None, None, None, None, False, None, None)
             returned_ids = {str(row[0].id) for row in session.execute(q).all()}
 
             assert str(ats_job.id) in returned_ids, "ATS job must be surfaced"
@@ -160,7 +160,7 @@ def test_dedup_query_surfaces_ats_job_even_when_only_aggregator_is_scored() -> N
         session.commit()
 
         try:
-            q = _build_query(cv_id, None, None, None, None, False, None)
+            q = _build_query(cv_id, None, None, None, None, False, None, None)
             returned_ids = {str(row[0].id) for row in session.execute(q).all()}
 
             # ATS row must win dedup; scored aggregator sibling must not appear.
