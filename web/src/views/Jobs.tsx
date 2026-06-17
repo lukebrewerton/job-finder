@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 import type { Job, JobDetail, JobsPage } from "../types";
 
 const REMOTE_OPTIONS = [
@@ -12,14 +12,17 @@ const REMOTE_OPTIONS = [
 ];
 
 async function fetchJobs(
+  page: number,
   minFit: number | null,
   remoteMode: string,
   salaryDisclosed: boolean | null,
+  statusFilter: string | null,
 ): Promise<JobsPage> {
-  const params = new URLSearchParams({ page_size: "100" });
+  const params = new URLSearchParams({ page: String(page), page_size: "50" });
   if (minFit !== null) params.set("min_fit", String(minFit));
   if (remoteMode) params.set("remote_mode", remoteMode);
   if (salaryDisclosed !== null) params.set("salary_disclosed", String(salaryDisclosed));
+  if (statusFilter) params.set("status", statusFilter);
   const res = await fetch(`/api/jobs?${params}`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
@@ -29,6 +32,15 @@ async function fetchJob(id: string): Promise<JobDetail> {
   const res = await fetch(`/api/jobs/${id}`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
+}
+
+async function setJobState(id: string, status: string): Promise<void> {
+  const res = await fetch(`/api/jobs/${id}/state`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
 }
 
 function salaryLabel(job: Job): string {
@@ -71,6 +83,31 @@ function fitBadge(score: number | null) {
   );
 }
 
+const STATUS_BADGE: Record<string, string> = {
+  shortlisted: "bg-blue-50 text-blue-700 border-blue-200",
+  applied: "bg-teal-50 text-teal-700 border-teal-200",
+  rejected: "bg-red-50 text-red-600 border-red-200",
+  ignored: "bg-slate-100 text-slate-500 border-slate-200",
+};
+
+function statusBadge(status: string | null) {
+  if (!status || status === "new") return null;
+  const cls = STATUS_BADGE[status] ?? "bg-slate-100 text-slate-500 border-slate-200";
+  return (
+    <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${cls}`}>
+      {status.charAt(0).toUpperCase() + status.slice(1)}
+    </span>
+  );
+}
+
+function appliedDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 const FLAG_LABELS: Record<string, string> = {
   stretch_role: "Stretch",
   missing_must_have: "Missing must-have",
@@ -79,10 +116,96 @@ const FLAG_LABELS: Record<string, string> = {
   remote_mismatch: "Remote mismatch",
 };
 
-function JobDetailPanel({ jobId, onClose }: { jobId: string; onClose: () => void }) {
+const TRIAGE_ACTIONS = [
+  { status: "shortlisted", label: "Shortlist" },
+  { status: "applied", label: "Mark as applied" },
+  { status: "rejected", label: "Reject" },
+  { status: "ignored", label: "Ignore" },
+] as const;
+
+const TRIAGE_ACTIVE_CLS: Record<string, string> = {
+  shortlisted: "bg-blue-600 text-white border-blue-600",
+  applied: "bg-teal-600 text-white border-teal-600",
+  rejected: "bg-red-500 text-white border-red-500",
+  ignored: "bg-slate-500 text-white border-slate-500",
+};
+
+function TriageSection({
+  data,
+  onMutate,
+  isPending,
+}: {
+  data: JobDetail;
+  onMutate: (status: string) => void;
+  isPending: boolean;
+}) {
+  const current = data.status ?? "new";
+
+  return (
+    <div>
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-400 mb-2">Triage</p>
+      <div className="flex flex-wrap gap-2">
+        {TRIAGE_ACTIONS.map(({ status, label }) => {
+          const isActive = current === status;
+          const activeCls = TRIAGE_ACTIVE_CLS[status];
+          return (
+            <button
+              key={status}
+              onClick={() => onMutate(isActive ? "new" : status)}
+              disabled={isPending}
+              className={[
+                "rounded border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50",
+                isActive
+                  ? activeCls
+                  : "border-slate-200 text-slate-600 hover:bg-slate-50",
+              ].join(" ")}
+            >
+              {isActive ? `✓ ${label}` : label}
+              {status === "applied" && isActive && data.applied_at
+                ? ` · ${appliedDate(data.applied_at)}`
+                : ""}
+            </button>
+          );
+        })}
+      </div>
+      {current !== "new" && (
+        <button
+          onClick={() => onMutate("new")}
+          disabled={isPending}
+          className="mt-1.5 text-xs text-slate-400 hover:text-slate-600 disabled:opacity-50"
+        >
+          Reset to new
+        </button>
+      )}
+    </div>
+  );
+}
+
+function JobDetailPanel({
+  jobId,
+  onClose,
+  onTriage,
+}: {
+  jobId: string;
+  onClose: () => void;
+  onTriage: (jobId: string, title: string, prevStatus: string, newStatus: string) => void;
+}) {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["job", jobId],
     queryFn: () => fetchJob(jobId),
+  });
+
+  const qc = useQueryClient();
+
+  const stateMut = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => setJobState(id, status),
+    onSuccess: (_result, variables) => {
+      qc.invalidateQueries({ queryKey: ["job", jobId] });
+      qc.invalidateQueries({ queryKey: ["jobs"] });
+      if (data) {
+        onTriage(jobId, data.title, data.status ?? "new", variables.status);
+      }
+    },
   });
 
   return (
@@ -124,6 +247,12 @@ function JobDetailPanel({ jobId, onClose }: { jobId: string; onClose: () => void
               </span>
               {data.fit_score !== null && fitBadge(data.fit_score)}
             </div>
+
+            <TriageSection
+              data={data}
+              onMutate={(status) => stateMut.mutate({ id: data.id, status })}
+              isPending={stateMut.isPending}
+            />
 
             {data.flags && data.flags.length > 0 && (
               <div>
@@ -194,140 +323,330 @@ function JobDetailPanel({ jobId, onClose }: { jobId: string; onClose: () => void
   );
 }
 
+function JobsTable({
+  jobs,
+  onRowClick,
+  showStatus,
+}: {
+  jobs: Job[];
+  onRowClick: (id: string) => void;
+  showStatus: boolean;
+}) {
+  const showAppliedDate = jobs.some((j) => j.applied_at != null);
+  return (
+    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-100 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
+            <th className="px-4 py-3">Role</th>
+            <th className="px-4 py-3">Company</th>
+            <th className="px-4 py-3">Location</th>
+            <th className="px-4 py-3">Remote</th>
+            <th className="px-4 py-3">Salary</th>
+            <th className="px-4 py-3">Fit</th>
+            {showStatus && <th className="px-4 py-3">Status</th>}
+            {showAppliedDate && <th className="px-4 py-3">Applied</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {jobs.map((job) => (
+            <tr
+              key={job.id}
+              className="border-b border-slate-50 transition-colors hover:bg-slate-50 cursor-pointer"
+              onClick={() => onRowClick(job.id)}
+            >
+              <td className="px-4 py-3 font-medium">
+                <a
+                  href={job.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-teal-600 hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {job.title}
+                </a>
+              </td>
+              <td className="px-4 py-3 text-slate-600">{job.company}</td>
+              <td className="px-4 py-3 text-slate-500">{job.location ?? "—"}</td>
+              <td className="px-4 py-3">
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+                  {remoteLabel(job.remote_mode)}
+                </span>
+              </td>
+              <td className="px-4 py-3 text-slate-600">
+                <span className={job.salary_disclosed ? "" : "italic text-slate-400"}>
+                  {salaryLabel(job)}
+                </span>
+              </td>
+              <td className="px-4 py-3">{fitBadge(job.fit_score)}</td>
+              {showStatus && (
+                <td className="px-4 py-3">{statusBadge(job.status)}</td>
+              )}
+              {showAppliedDate && (
+                <td className="px-4 py-3 text-slate-500 text-xs">
+                  {job.applied_at ? appliedDate(job.applied_at) : "—"}
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function Pagination({
+  page,
+  pageSize,
+  total,
+  onPageChange,
+}: {
+  page: number;
+  pageSize: number;
+  total: number;
+  onPageChange: (p: number) => void;
+}) {
+  const totalPages = Math.ceil(total / pageSize);
+  if (totalPages <= 1) return null;
+
+  const start = (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
+
+  return (
+    <div className="mt-4 flex items-center justify-between text-sm">
+      <p className="text-xs text-slate-400">
+        {start}–{end} of {total} result{total !== 1 ? "s" : ""}
+      </p>
+      <div className="flex gap-2">
+        <button
+          onClick={() => onPageChange(page - 1)}
+          disabled={page === 1}
+          className="rounded border border-slate-200 px-3 py-1 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+        <span className="rounded border border-slate-200 px-3 py-1 text-xs text-slate-500 bg-slate-50">
+          {page} / {totalPages}
+        </span>
+        <button
+          onClick={() => onPageChange(page + 1)}
+          disabled={page >= totalPages}
+          className="rounded border border-slate-200 px-3 py-1 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
+}
+
+type UndoInfo = {
+  jobId: string;
+  jobTitle: string;
+  prevStatus: string;
+  newStatus: string;
+};
+
 export default function Jobs() {
+  const [tab, setTab] = useState<"active" | "applied">("active");
+  const [page, setPage] = useState(1);
   const [minFit, setMinFit] = useState<number | null>(null);
   const [remoteMode, setRemoteMode] = useState("");
   const [salaryDisclosed, setSalaryDisclosed] = useState<boolean | null>(null);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [undoInfo, setUndoInfo] = useState<UndoInfo | null>(null);
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    return () => {
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    };
+  }, []);
+
+  function setTabAndReset(t: "active" | "applied") {
+    setTab(t);
+    setPage(1);
+  }
+  function setMinFitAndReset(v: number | null) {
+    setMinFit(v);
+    setPage(1);
+  }
+  function setRemoteModeAndReset(v: string) {
+    setRemoteMode(v);
+    setPage(1);
+  }
+  function setSalaryDisclosedAndReset(v: boolean | null) {
+    setSalaryDisclosed(v);
+    setPage(1);
+  }
+
+  const statusFilter = tab === "applied" ? "applied" : null;
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["jobs", minFit, remoteMode, salaryDisclosed],
-    queryFn: () => fetchJobs(minFit, remoteMode, salaryDisclosed),
+    queryKey: ["jobs", tab, page, minFit, remoteMode, salaryDisclosed],
+    queryFn: () => fetchJobs(page, minFit, remoteMode, salaryDisclosed, statusFilter),
   });
+
+  const handleTriage = (jobId: string, title: string, prevStatus: string, newStatus: string) => {
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+
+    if (newStatus === "rejected" || newStatus === "ignored") {
+      setUndoInfo({ jobId, jobTitle: title, prevStatus, newStatus });
+      undoTimerRef.current = setTimeout(() => {
+        setUndoInfo(null);
+        undoTimerRef.current = null;
+      }, 5000);
+    } else {
+      setUndoInfo(null);
+    }
+  };
+
+  const handleUndo = async () => {
+    if (!undoInfo) return;
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current);
+      undoTimerRef.current = null;
+    }
+    await setJobState(undoInfo.jobId, undoInfo.prevStatus);
+    qc.invalidateQueries({ queryKey: ["jobs"] });
+    qc.invalidateQueries({ queryKey: ["job", undoInfo.jobId] });
+    setUndoInfo(null);
+  };
+
+  const isActiveTab = tab === "active";
 
   return (
     <>
-      <div className="mb-4 flex flex-wrap items-center gap-4">
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-slate-600 font-medium">Min fit:</label>
-          <input
-            type="number"
-            min={0}
-            max={100}
-            placeholder="0–100"
-            value={minFit ?? ""}
-            onChange={(e) => {
-              const v = e.target.value;
-              setMinFit(v === "" ? null : Math.max(0, Math.min(100, parseInt(v, 10))));
-            }}
-            className="w-20 rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
-          />
-          {minFit !== null && (
-            <button onClick={() => setMinFit(null)} className="text-xs text-slate-400 hover:text-slate-600">
-              Clear
-            </button>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-slate-600 font-medium">Remote:</label>
-          <select
-            value={remoteMode}
-            onChange={(e) => setRemoteMode(e.target.value)}
-            className="rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+      {/* Tab switcher */}
+      <div className="mb-4 flex gap-1 border-b border-slate-200">
+        {(["active", "applied"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTabAndReset(t)}
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+              tab === t
+                ? "border-teal-600 text-teal-700"
+                : "border-transparent text-slate-500 hover:text-slate-700"
+            }`}
           >
-            {REMOTE_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-slate-600 font-medium">Salary:</label>
-          <select
-            value={salaryDisclosed === null ? "" : String(salaryDisclosed)}
-            onChange={(e) => {
-              const v = e.target.value;
-              setSalaryDisclosed(v === "" ? null : v === "true");
-            }}
-            className="rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
-          >
-            <option value="">All</option>
-            <option value="true">Disclosed only</option>
-            <option value="false">Not disclosed</option>
-          </select>
-        </div>
+            {t === "active" ? "Active" : "Applied"}
+          </button>
+        ))}
       </div>
+
+      {/* Filters — only on active tab */}
+      {isActiveTab && (
+        <div className="mb-4 flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-slate-600 font-medium">Min fit:</label>
+            <input
+              type="number"
+              min={0}
+              max={100}
+              placeholder="0–100"
+              value={minFit ?? ""}
+              onChange={(e) => {
+                const v = e.target.value;
+                setMinFitAndReset(v === "" ? null : Math.max(0, Math.min(100, parseInt(v, 10))));
+              }}
+              className="w-20 rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+            />
+            {minFit !== null && (
+              <button onClick={() => setMinFitAndReset(null)} className="text-xs text-slate-400 hover:text-slate-600">
+                Clear
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-slate-600 font-medium">Remote:</label>
+            <select
+              value={remoteMode}
+              onChange={(e) => setRemoteModeAndReset(e.target.value)}
+              className="rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+            >
+              {REMOTE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-slate-600 font-medium">Salary:</label>
+            <select
+              value={salaryDisclosed === null ? "" : String(salaryDisclosed)}
+              onChange={(e) => {
+                const v = e.target.value;
+                setSalaryDisclosedAndReset(v === "" ? null : v === "true");
+              }}
+              className="rounded border border-slate-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+            >
+              <option value="">All</option>
+              <option value="true">Disclosed only</option>
+              <option value="false">Not disclosed</option>
+            </select>
+          </div>
+        </div>
+      )}
 
       {isLoading && <p className="text-slate-500">Loading jobs…</p>}
       {isError && <p className="text-red-600">Failed to load jobs.</p>}
 
       {data && data.items.length === 0 && (
         <p className="text-slate-500">
-          {minFit !== null || remoteMode || salaryDisclosed !== null
-            ? "No jobs match the current filters."
-            : <>No jobs yet. Run{" "}<code className="rounded bg-slate-100 px-1">make fetch SOURCE=adzuna</code> to populate.</>}
+          {tab === "applied"
+            ? "No applied jobs yet. Open a job and click \"Mark as applied\"."
+            : minFit !== null || remoteMode || salaryDisclosed !== null
+              ? "No jobs match the current filters."
+              : <>No jobs yet. Run{" "}<code className="rounded bg-slate-100 px-1">make fetch SOURCE=adzuna</code> to populate.</>}
         </p>
       )}
 
       {data && data.items.length > 0 && (
         <>
-          <p className="mb-2 text-xs text-slate-400">{data.total} job{data.total !== 1 ? "s" : ""}</p>
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
-                  <th className="px-4 py-3">Role</th>
-                  <th className="px-4 py-3">Company</th>
-                  <th className="px-4 py-3">Location</th>
-                  <th className="px-4 py-3">Remote</th>
-                  <th className="px-4 py-3">Salary</th>
-                  <th className="px-4 py-3">Fit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map((job) => (
-                  <tr
-                    key={job.id}
-                    className="border-b border-slate-50 transition-colors hover:bg-slate-50 cursor-pointer"
-                    onClick={() => setSelectedJobId(job.id)}
-                  >
-                    <td className="px-4 py-3 font-medium">
-                      <a
-                        href={job.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-teal-600 hover:underline"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {job.title}
-                      </a>
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">{job.company}</td>
-                    <td className="px-4 py-3 text-slate-500">{job.location ?? "—"}</td>
-                    <td className="px-4 py-3">
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
-                        {remoteLabel(job.remote_mode)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">
-                      <span className={job.salary_disclosed ? "" : "italic text-slate-400"}>
-                        {salaryLabel(job)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">{fitBadge(job.fit_score)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <p className="mb-2 text-xs text-slate-400">
+            {data.total} job{data.total !== 1 ? "s" : ""}
+          </p>
+          <JobsTable
+            jobs={data.items}
+            onRowClick={setSelectedJobId}
+            showStatus={isActiveTab && data.items.some((j) => j.status && j.status !== "new")}
+          />
+          <Pagination
+            page={data.page}
+            pageSize={data.page_size}
+            total={data.total}
+            onPageChange={setPage}
+          />
         </>
       )}
 
       {selectedJobId && (
-        <JobDetailPanel jobId={selectedJobId} onClose={() => setSelectedJobId(null)} />
+        <JobDetailPanel
+          jobId={selectedJobId}
+          onClose={() => setSelectedJobId(null)}
+          onTriage={handleTriage}
+        />
+      )}
+
+      {undoInfo && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-lg bg-slate-800 px-4 py-3 text-sm text-white shadow-lg">
+          <span>
+            {undoInfo.newStatus === "rejected" ? "Rejected" : "Ignored"}
+            {" · "}
+            <span className="max-w-xs truncate opacity-60">{undoInfo.jobTitle}</span>
+          </span>
+          <button
+            onClick={handleUndo}
+            className="rounded bg-white/20 px-2.5 py-1 text-xs font-medium hover:bg-white/30 transition-colors"
+          >
+            Undo
+          </button>
+        </div>
       )}
     </>
   );

@@ -42,12 +42,14 @@ def create_app() -> FastAPI:
 
         return {"ready": healthy, "checks": checks}
 
+    from app.api.auth import router as auth_router
     from app.api.cvs import router as cvs_router
     from app.api.jobs import router as jobs_router
     from app.api.profiles import router as profiles_router
     from app.api.sources import admin_router as admin_sources_router
     from app.api.sources import router as sources_router
 
+    app.include_router(auth_router)
     app.include_router(jobs_router)
     app.include_router(profiles_router)
     app.include_router(cvs_router)

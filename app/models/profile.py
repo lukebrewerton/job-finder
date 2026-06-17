@@ -28,6 +28,7 @@ class SearchProfile(Base):
     currency: Mapped[str] = mapped_column(String(3), nullable=False, default="GBP")
     locations: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    exclude_entry_level: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[object] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

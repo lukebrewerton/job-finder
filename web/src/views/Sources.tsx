@@ -26,14 +26,18 @@ async function deleteSource(id: string): Promise<void> {
   if (!res.ok) throw new Error(await res.text());
 }
 
-async function toggleEnabled(id: string, enabled: boolean): Promise<Source> {
+async function updateSource(id: string, body: object): Promise<Source> {
   const res = await fetch(`/api/sources/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ enabled }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
+}
+
+async function toggleEnabled(id: string, enabled: boolean): Promise<Source> {
+  return updateSource(id, { enabled });
 }
 
 async function runNow(id: string): Promise<{ task_id: string }> {
@@ -163,7 +167,95 @@ function AddSourceForm({ onClose }: { onClose: () => void }) {
   );
 }
 
-function SourceRow({ source }: { source: Source }) {
+function EditSourceForm({ source, onClose }: { source: Source; onClose: () => void }) {
+  const qc = useQueryClient();
+  const configDefs = CONFIG_HELP[source.type] ?? [];
+  const [name, setName] = useState(source.name);
+  const [cadence, setCadence] = useState(source.cadence_minutes);
+  const [configFields, setConfigFields] = useState<Record<string, string>>(
+    Object.fromEntries(configDefs.map((d) => [d.key, String(source.config[d.key] ?? "")])),
+  );
+  const [error, setError] = useState<string | null>(null);
+
+  const mutation = useMutation({
+    mutationFn: (body: object) => updateSource(source.id, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sources"] });
+      onClose();
+    },
+    onError: (e: Error) => setError(e.message),
+  });
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const config: Record<string, string> = {};
+    for (const def of configDefs) {
+      if (configFields[def.key]) config[def.key] = configFields[def.key];
+    }
+    mutation.mutate({ name, cadence_minutes: cadence, config });
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-lg p-5 mb-6 space-y-4">
+      <h3 className="font-semibold text-slate-800">
+        Edit source
+        <span className="ml-2 font-mono text-sm font-normal text-slate-400">{source.type}</span>
+      </h3>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1">Display name</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1">Cadence (minutes)</label>
+          <input
+            type="number"
+            value={cadence}
+            onChange={(e) => setCadence(Number(e.target.value))}
+            min={1}
+            className="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"
+          />
+        </div>
+      </div>
+
+      {configDefs.map((def) => (
+        <div key={def.key}>
+          <label className="block text-xs font-medium text-slate-600 mb-1">{def.label}</label>
+          <input
+            type="text"
+            value={configFields[def.key] ?? ""}
+            onChange={(e) => setConfigFields((prev) => ({ ...prev, [def.key]: e.target.value }))}
+            placeholder={def.placeholder}
+            className="w-full border border-slate-300 rounded px-2 py-1.5 text-sm font-mono"
+          />
+        </div>
+      ))}
+
+      {error && <p className="text-xs text-red-600">{error}</p>}
+
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={mutation.isPending}
+          className="bg-teal-600 hover:bg-teal-700 text-white text-sm px-4 py-1.5 rounded disabled:opacity-50"
+        >
+          {mutation.isPending ? "Saving…" : "Save changes"}
+        </button>
+        <button type="button" onClick={onClose} className="text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5">
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function SourceRow({ source, onEdit }: { source: Source; onEdit: (s: Source) => void }) {
   const qc = useQueryClient();
   const [runStatus, setRunStatus] = useState<string | null>(null);
 
@@ -235,6 +327,12 @@ function SourceRow({ source }: { source: Source }) {
             {runStatus ?? "Run now"}
           </button>
           <button
+            onClick={() => onEdit(source)}
+            className="text-xs text-slate-500 hover:text-slate-700"
+          >
+            Edit
+          </button>
+          <button
             onClick={() => deleteMutation.mutate()}
             className="text-xs text-red-400 hover:text-red-600"
           >
@@ -248,16 +346,22 @@ function SourceRow({ source }: { source: Source }) {
 
 export default function Sources() {
   const [showForm, setShowForm] = useState(false);
+  const [editingSource, setEditingSource] = useState<Source | null>(null);
   const { data: sources, isLoading, error } = useQuery({ queryKey: ["sources"], queryFn: fetchSources });
 
   if (isLoading) return <p className="text-slate-500 text-sm">Loading sources…</p>;
   if (error) return <p className="text-red-500 text-sm">Failed to load sources.</p>;
 
+  function handleEdit(s: Source) {
+    setShowForm(false);
+    setEditingSource(s);
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-slate-800">Sources</h2>
-        {!showForm && (
+        {!showForm && !editingSource && (
           <button
             onClick={() => setShowForm(true)}
             className="bg-teal-600 hover:bg-teal-700 text-white text-sm px-4 py-1.5 rounded"
@@ -268,6 +372,7 @@ export default function Sources() {
       </div>
 
       {showForm && <AddSourceForm onClose={() => setShowForm(false)} />}
+      {editingSource && <EditSourceForm source={editingSource} onClose={() => setEditingSource(null)} />}
 
       <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
         <table className="w-full">
@@ -283,7 +388,7 @@ export default function Sources() {
             </tr>
           </thead>
           <tbody>
-            {sources?.map((s) => <SourceRow key={s.id} source={s} />)}
+            {sources?.map((s) => <SourceRow key={s.id} source={s} onEdit={handleEdit} />)}
             {!sources?.length && (
               <tr>
                 <td colSpan={7} className="px-4 py-8 text-center text-slate-400 text-sm">

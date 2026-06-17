@@ -21,6 +21,14 @@ class Settings(BaseSettings):
 
     redis_url: str = "redis://redis:6379/0"
 
+    # Auth (Phase 6 — OIDC relying-party)
+    oidc_issuer: str = ""
+    oidc_client_id: str = ""
+    oidc_client_secret: str = ""
+    oidc_redirect_uri: str = "http://localhost/api/auth/callback"
+    oidc_allowed_emails: str = ""  # comma-separated; blank = allow any authenticated identity
+    session_secret: str = "change-me-in-production"
+
     # Source credentials
     adzuna_app_id: str = ""
     adzuna_app_key: str = ""

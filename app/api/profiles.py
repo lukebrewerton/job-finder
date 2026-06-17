@@ -28,6 +28,7 @@ class ProfileOut(BaseModel):
     currency: str
     locations: list | None
     active: bool
+    exclude_entry_level: bool
 
     model_config = {"from_attributes": True}
 
@@ -42,6 +43,7 @@ class ProfileCreate(BaseModel):
     currency: str = "GBP"
     locations: list[str] | None = None
     active: bool = True
+    exclude_entry_level: bool = False
 
 
 class ProfileUpdate(BaseModel):
@@ -57,6 +59,7 @@ class ProfileUpdate(BaseModel):
     currency: str | None = None
     locations: list[str] | None = None
     active: bool | None = None
+    exclude_entry_level: bool | None = None
 
 
 @router.get("", response_model=list[ProfileOut])
@@ -92,6 +95,7 @@ def create_profile(
         currency=body.currency,
         locations=body.locations,
         active=body.active,
+        exclude_entry_level=body.exclude_entry_level,
     )
     session.add(profile)
     session.commit()
@@ -143,6 +147,8 @@ def update_profile(
         profile.locations = body.locations
     if body.active is not None:
         profile.active = body.active
+    if body.exclude_entry_level is not None:
+        profile.exclude_entry_level = body.exclude_entry_level
 
     if body.title_variations is not None:
         # Explicit edit from user — persist without re-expanding.

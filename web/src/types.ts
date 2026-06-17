@@ -12,6 +12,8 @@ export type Job = {
   source_id: string;
   fit_score: number | null;
   flags: string[] | null;
+  status: string | null;
+  applied_at: string | null;
 };
 
 export type JobDetail = Job & {
@@ -40,6 +42,13 @@ export type Profile = {
   currency: string;
   locations: string[] | null;
   active: boolean;
+  exclude_entry_level: boolean;
+};
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  name: string;
 };
 
 export type Source = {

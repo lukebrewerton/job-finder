@@ -31,6 +31,16 @@ async function updateVariations(id: string, variations: string[]): Promise<Profi
   return res.json();
 }
 
+async function updateProfile(id: string, body: object): Promise<Profile> {
+  const res = await fetch(`/api/profiles/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
 async function deleteProfile(id: string): Promise<void> {
   const res = await fetch(`/api/profiles/${id}`, { method: "DELETE" });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -120,6 +130,7 @@ function CreateForm({ onCreated }: { onCreated: () => void }) {
   const [role, setRole] = useState("");
   const [seniority, setSeniority] = useState("senior");
   const [remoteModes, setRemoteModes] = useState<string[]>(["remote", "remote_first"]);
+  const [excludeEntryLevel, setExcludeEntryLevel] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
@@ -134,7 +145,13 @@ function CreateForm({ onCreated }: { onCreated: () => void }) {
     setCreating(true);
     setError(null);
     try {
-      await createProfile({ name, canonical_role: role, seniority, remote_modes: remoteModes });
+      await createProfile({
+        name,
+        canonical_role: role,
+        seniority,
+        remote_modes: remoteModes,
+        exclude_entry_level: excludeEntryLevel,
+      });
       setName("");
       setRole("");
       onCreated();
@@ -202,6 +219,17 @@ function CreateForm({ onCreated }: { onCreated: () => void }) {
             ))}
           </div>
         </div>
+        <div className="sm:col-span-2">
+          <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={excludeEntryLevel}
+              onChange={(e) => setExcludeEntryLevel(e.target.checked)}
+              className="accent-teal-600"
+            />
+            Exclude entry-level &amp; trainee roles (junior, trainee, graduate, apprentice, intern)
+          </label>
+        </div>
       </div>
       {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
       <div className="mt-4 flex items-center gap-2">
@@ -217,6 +245,58 @@ function CreateForm({ onCreated }: { onCreated: () => void }) {
         )}
       </div>
     </form>
+  );
+}
+
+function ProfileCard({
+  profile,
+  onRefresh,
+  onDelete,
+}: {
+  profile: Profile;
+  onRefresh: () => void;
+  onDelete: () => void;
+}) {
+  const qc = useQueryClient();
+
+  const toggleEntryLevel = useMutation({
+    mutationFn: (val: boolean) =>
+      updateProfile(profile.id, { exclude_entry_level: val }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["profiles"] }),
+  });
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="font-semibold text-slate-800">{profile.name}</h3>
+          <p className="text-sm text-slate-500">
+            {profile.canonical_role} · {profile.seniority}
+            {!profile.active && (
+              <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-400">
+                inactive
+              </span>
+            )}
+          </p>
+        </div>
+        <button onClick={onDelete} className="text-xs text-slate-400 hover:text-red-500">
+          Delete
+        </button>
+      </div>
+      <div className="mt-3">
+        <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={profile.exclude_entry_level}
+            onChange={(e) => toggleEntryLevel.mutate(e.target.checked)}
+            className="accent-teal-600"
+            disabled={toggleEntryLevel.isPending}
+          />
+          Exclude entry-level &amp; trainee roles
+        </label>
+      </div>
+      <TitleChips profile={profile} onSaved={onRefresh} />
+    </div>
   );
 }
 
@@ -246,31 +326,7 @@ export default function Profiles() {
 
       {profiles &&
         profiles.map((p) => (
-          <div
-            key={p.id}
-            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="font-semibold text-slate-800">{p.name}</h3>
-                <p className="text-sm text-slate-500">
-                  {p.canonical_role} · {p.seniority}
-                  {!p.active && (
-                    <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-400">
-                      inactive
-                    </span>
-                  )}
-                </p>
-              </div>
-              <button
-                onClick={() => deleteMut.mutate(p.id)}
-                className="text-xs text-slate-400 hover:text-red-500"
-              >
-                Delete
-              </button>
-            </div>
-            <TitleChips profile={p} onSaved={refresh} />
-          </div>
+          <ProfileCard key={p.id} profile={p} onRefresh={refresh} onDelete={() => deleteMut.mutate(p.id)} />
         ))}
     </div>
   );

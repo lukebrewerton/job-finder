@@ -24,3 +24,4 @@ celerybeat-schedule
 .idea/
 .vscode/
 notes
+.claude
