@@ -22,6 +22,12 @@ async function setDefault(id: string): Promise<CV> {
   return res.json();
 }
 
+async function rescoreCV(id: string): Promise<{ enqueued: number }> {
+  const res = await fetch(`/api/cvs/${id}/rescore`, { method: "POST" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
 export default function CVs() {
   const qc = useQueryClient();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -31,9 +37,19 @@ export default function CVs() {
 
   const { data: cvs, isLoading } = useQuery({ queryKey: ["cvs"], queryFn: fetchCVs });
 
+  const [rescoreMsg, setRescoreMsg] = useState<string | null>(null);
+
   const defaultMut = useMutation({
     mutationFn: setDefault,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["cvs"] }),
+  });
+
+  const rescoreMut = useMutation({
+    mutationFn: rescoreCV,
+    onSuccess: (data) => {
+      setRescoreMsg(`Enqueued scoring for ${data.enqueued} jobs. Scores will appear as they complete.`);
+      setTimeout(() => setRescoreMsg(null), 6000);
+    },
   });
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,7 +61,7 @@ export default function CVs() {
     try {
       const cv = await uploadCV(file);
       qc.invalidateQueries({ queryKey: ["cvs"] });
-      setSuccess(`CV "${cv.name}" uploaded and parsed successfully.`);
+      setSuccess(`CV "${cv.name}" uploaded and parsed. Scoring all jobs in the background…`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed.");
     } finally {
@@ -79,6 +95,12 @@ export default function CVs() {
         {success && <p className="mt-2 text-xs text-teal-700">{success}</p>}
       </div>
 
+      {rescoreMsg && (
+        <p className="text-xs text-teal-700 bg-teal-50 border border-teal-200 rounded px-3 py-2">
+          {rescoreMsg}
+        </p>
+      )}
+
       {isLoading && <p className="text-slate-500">Loading CVs…</p>}
 
       {cvs && cvs.length === 0 && (
@@ -103,14 +125,23 @@ export default function CVs() {
                 </h3>
                 <p className="text-xs text-slate-400">v{cv.version}</p>
               </div>
-              {!cv.is_default && (
+              <div className="flex gap-3 items-center">
+                {!cv.is_default && (
+                  <button
+                    onClick={() => defaultMut.mutate(cv.id)}
+                    className="text-xs text-teal-600 hover:underline"
+                  >
+                    Set as default
+                  </button>
+                )}
                 <button
-                  onClick={() => defaultMut.mutate(cv.id)}
-                  className="text-xs text-teal-600 hover:underline"
+                  onClick={() => rescoreMut.mutate(cv.id)}
+                  disabled={rescoreMut.isPending}
+                  className="text-xs text-slate-500 hover:text-slate-700 disabled:opacity-50"
                 >
-                  Set as default
+                  {rescoreMut.isPending ? "Enqueuing…" : "Re-score jobs"}
                 </button>
-              )}
+              </div>
             </div>
 
             <div className="mt-3 space-y-3">

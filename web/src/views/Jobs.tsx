@@ -272,6 +272,15 @@ function JobDetailPanel({
               </div>
             )}
 
+            {data.summary && (
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-400 mb-1">
+                  Role summary
+                </p>
+                <p className="text-sm text-slate-600">{data.summary}</p>
+              </div>
+            )}
+
             {data.rationale && (
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-slate-400 mb-1">

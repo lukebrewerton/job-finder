@@ -66,6 +66,7 @@ def score_job_task(job_id_str: str, cv_id_str: str) -> None:
                 gaps=result["gaps"],
                 flags=result["flags"],
                 rationale=result["rationale"],
+                summary=result["summary"],
                 model=settings.llm_model,
                 scored_at=datetime.now(UTC),
             )

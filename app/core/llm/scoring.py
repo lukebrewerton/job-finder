@@ -63,8 +63,17 @@ _SCHEMA: dict = {
             "type": "string",
             "description": "2–4 sentences explaining the score in British English.",
         },
+        "summary": {
+            "type": "string",
+            "description": (
+                "2–3 sentences in plain British English summarising what the role "
+                "actually involves — the team, day-to-day responsibilities, and key "
+                "technologies. Omit all marketing language, filler phrases, and "
+                "company sales copy."
+            ),
+        },
     },
-    "required": ["fit_score", "matched_skills", "gaps", "flags", "rationale"],
+    "required": ["fit_score", "matched_skills", "gaps", "flags", "rationale", "summary"],
     "additionalProperties": False,
 }
 
@@ -76,12 +85,14 @@ def _normalise(raw: dict) -> dict:
     gaps = [str(g).strip() for g in (raw.get("gaps") or []) if str(g).strip()]
     flags = [f for f in (raw.get("flags") or []) if f in _VALID_FLAGS]
     rationale = str(raw.get("rationale") or "")
+    summary = str(raw.get("summary") or "")
     return {
         "fit_score": fit_score,
         "matched_skills": matched_skills,
         "gaps": gaps,
         "flags": flags,
         "rationale": rationale,
+        "summary": summary,
     }
 
 
@@ -120,7 +131,10 @@ def score_job(
         f"- flags: list of zero or more strings, each must be one of: "
         f"stretch_role, missing_must_have, below_salary_target, "
         f"seniority_mismatch, remote_mismatch\n"
-        f"- rationale: string, 2-4 sentences in British English explaining the score"
+        f"- rationale: string, 2-4 sentences in British English explaining the score\n"
+        f"- summary: string, 2-3 sentences in plain British English describing what the role "
+        f"actually involves — the team, responsibilities, and key technologies. "
+        f"Omit all marketing language and filler."
     )
 
     raw = provider.generate_json(prompt, _SCHEMA)

@@ -49,6 +49,7 @@ class JobDetail(JobOut):
     matched_skills: list[str] | None = None
     gaps: list[str] | None = None
     rationale: str | None = None
+    summary: str | None = None
 
 
 class JobsPage(BaseModel):
@@ -261,6 +262,7 @@ def get_job(
         matched_skills=score.matched_skills if score else None,
         gaps=score.gaps if score else None,
         rationale=score.rationale if score else None,
+        summary=score.summary if score else None,
         status=state.status if state else None,
         applied_at=state.applied_at if state else None,
     )

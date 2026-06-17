@@ -5,14 +5,31 @@ import uuid
 
 from fastapi import APIRouter, HTTPException, UploadFile
 from pydantic import BaseModel
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 
 from app.api.deps import CurrentUser, DbSession
 from app.core.llm.cv_parse import parse_cv
 from app.core.llm.provider import get_llm_provider
 from app.models.cv import CV
+from app.models.job import Job
+from app.models.job_score import JobScore
 
 router = APIRouter(prefix="/api/cvs", tags=["cvs"])
+
+
+def _enqueue_rescore(cv_id: uuid.UUID, session: DbSession) -> int:
+    from app.tasks.scoring import score_job_task
+
+    # Clear existing scores so the task's idempotency check doesn't skip them.
+    # Safe for new CVs (no-op) and correct for explicit re-scores.
+    session.execute(delete(JobScore).where(JobScore.cv_id == cv_id))
+    session.commit()
+
+    job_ids = list(session.scalars(select(Job.id)))
+    cv_str = str(cv_id)
+    for jid in job_ids:
+        score_job_task.delay(str(jid), cv_str)
+    return len(job_ids)
 
 
 class CVOut(BaseModel):
@@ -74,6 +91,7 @@ async def upload_cv(
     session.add(cv)
     session.commit()
     session.refresh(cv)
+    _enqueue_rescore(cv.id, session)
     return cv
 
 
@@ -83,6 +101,15 @@ def get_cv(cv_id: uuid.UUID, session: DbSession, user: CurrentUser) -> CV:
     if cv is None or cv.user_id != user.id:
         raise HTTPException(status_code=404, detail="CV not found.")
     return cv
+
+
+@router.post("/{cv_id}/rescore")
+def rescore_cv(cv_id: uuid.UUID, session: DbSession, user: CurrentUser) -> dict[str, int]:
+    cv = session.get(CV, cv_id)
+    if cv is None or cv.user_id != user.id:
+        raise HTTPException(status_code=404, detail="CV not found.")
+    enqueued = _enqueue_rescore(cv_id, session)
+    return {"enqueued": enqueued}
 
 
 @router.put("/{cv_id}/default", response_model=CVOut)

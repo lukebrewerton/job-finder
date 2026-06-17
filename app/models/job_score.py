@@ -27,6 +27,7 @@ class JobScore(Base):
     gaps: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     flags: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     rationale: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    summary: Mapped[str] = mapped_column(Text, nullable=False, default="")
     model: Mapped[str] = mapped_column(String, nullable=False, default="")
     scored_at: Mapped[object] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False

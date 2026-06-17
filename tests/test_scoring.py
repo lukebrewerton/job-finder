@@ -24,6 +24,7 @@ class _StubProvider:
             "gaps": ["Helm", "ArgoCD"],
             "flags": ["stretch_role"],
             "rationale": "Strong match on core skills with minor gaps in GitOps tooling.",
+            "summary": "A platform engineering role building cloud infrastructure.",
         }
 
 
@@ -34,6 +35,7 @@ def test_score_job_returns_required_keys():
     assert "gaps" in result
     assert "flags" in result
     assert "rationale" in result
+    assert "summary" in result
 
 
 def test_score_job_fit_score_range():
@@ -105,6 +107,7 @@ def test_normalise_missing_fields_defaults():
     assert result["gaps"] == []
     assert result["flags"] == []
     assert result["rationale"] == ""
+    assert result["summary"] == ""
 
 
 def test_score_job_prompt_contains_job_title():
@@ -119,6 +122,7 @@ def test_score_job_prompt_contains_job_title():
                 "gaps": [],
                 "flags": [],
                 "rationale": "Test.",
+                "summary": "Test summary.",
             }
 
     score_job("Unique Job Title XYZ", _JOB_COMPANY, _JOB_DESC, _CV, _CapturingProvider())

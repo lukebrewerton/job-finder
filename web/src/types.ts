@@ -20,6 +20,7 @@ export type JobDetail = Job & {
   matched_skills: string[] | null;
   gaps: string[] | null;
   rationale: string | null;
+  summary: string | null;
 };
 
 export type JobsPage = {
