@@ -100,11 +100,25 @@ services:
       context: ./web
       dockerfile: Dockerfile
       target: prod
-    ports:
-      - "${WEB_PORT:-8080}:80"
+    networks:
+      - default
+      - traefik
     depends_on:
       - api
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.job-finder.rule=Host(`${APP_DOMAIN:?set APP_DOMAIN in Portainer}`)"
+      - "traefik.http.routers.job-finder.entrypoints=websecure"
+      - "traefik.http.routers.job-finder.tls.certresolver=${CERT_RESOLVER:-letsencrypt}"
+      - "traefik.http.services.job-finder.loadbalancer.server.port=80"
+      - "traefik.docker.network=${TRAEFIK_NETWORK:-traefik}"
 
 volumes:
   pgdata:
+
+networks:
+  default: {}
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK:-traefik}
