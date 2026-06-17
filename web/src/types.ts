@@ -13,6 +13,7 @@ export type Job = {
   fit_score: number | null;
   flags: string[] | null;
   status: string | null;
+  notes: string | null;
   applied_at: string | null;
 };
 

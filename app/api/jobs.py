@@ -6,7 +6,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy import Select, and_, false, func, not_, select
+from sqlalchemy import Select, and_, false, func, not_, or_, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import CurrentUser
@@ -40,6 +40,7 @@ class JobOut(BaseModel):
     fit_score: int | None = None
     flags: list[str] | None = None
     status: str | None = None
+    notes: str | None = None
     applied_at: datetime | None = None
 
     model_config = {"from_attributes": True}
@@ -103,6 +104,7 @@ def _build_query(
     salary_disclosed: bool | None,
     exclude_entry_level: bool,
     status_filter: str | None,
+    search: str | None,
 ) -> Select[tuple[Job, JobScore, JobState]]:
     """Build a scored + deduplicated jobs query.
 
@@ -150,10 +152,15 @@ def _build_query(
         q = q.where(Job.salary_disclosed.is_(salary_disclosed))
     if exclude_entry_level:
         q = q.where(not_(Job.title.op("~*")(_ENTRY_LEVEL_RE)))
+    if search:
+        term = f"%{search}%"
+        q = q.where(or_(Job.title.ilike(term), Job.company.ilike(term)))
 
     if user_id is not None:
         if status_filter == "applied":
             q = q.where(Job.dedup_key.in_(_status_dedup_keys_subquery(user_id, ["applied"])))
+        elif status_filter == "shortlisted":
+            q = q.where(Job.dedup_key.in_(_status_dedup_keys_subquery(user_id, ["shortlisted"])))
         else:
             # Active view: hide jobs the user has triaged away.
             q = q.where(
@@ -175,6 +182,7 @@ def list_jobs(
     remote_mode: str | None = Query(None),
     salary_disclosed: bool | None = Query(None),
     status: str | None = Query(None),
+    search: str | None = Query(None, max_length=200),
 ) -> JobsPage:
     cv_id = _default_cv_id(session)
     profile = _active_profile(session, user.id)
@@ -188,6 +196,7 @@ def list_jobs(
         salary_disclosed=salary_disclosed,
         exclude_entry_level=exclude_entry_level,
         status_filter=status,
+        search=search,
     )
 
     total = session.scalar(select(func.count()).select_from(q.subquery())) or 0
@@ -218,6 +227,7 @@ def list_jobs(
                 fit_score=score.fit_score if score else None,
                 flags=score.flags if score else None,
                 status=state.status if state else None,
+                notes=state.notes if state else None,
                 applied_at=state.applied_at if state else None,
             )
         )
@@ -264,6 +274,7 @@ def get_job(
         rationale=score.rationale if score else None,
         summary=score.summary if score else None,
         status=state.status if state else None,
+        notes=state.notes if state else None,
         applied_at=state.applied_at if state else None,
     )
 

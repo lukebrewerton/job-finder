@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useDeferredValue } from "react";
 import type { Job, JobDetail, JobsPage } from "../types";
 
 const REMOTE_OPTIONS = [
@@ -17,12 +17,14 @@ async function fetchJobs(
   remoteMode: string,
   salaryDisclosed: boolean | null,
   statusFilter: string | null,
+  search: string,
 ): Promise<JobsPage> {
   const params = new URLSearchParams({ page: String(page), page_size: "50" });
   if (minFit !== null) params.set("min_fit", String(minFit));
   if (remoteMode) params.set("remote_mode", remoteMode);
   if (salaryDisclosed !== null) params.set("salary_disclosed", String(salaryDisclosed));
   if (statusFilter) params.set("status", statusFilter);
+  if (search) params.set("search", search);
   const res = await fetch(`/api/jobs?${params}`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
@@ -34,11 +36,11 @@ async function fetchJob(id: string): Promise<JobDetail> {
   return res.json();
 }
 
-async function setJobState(id: string, status: string): Promise<void> {
+async function setJobState(id: string, status: string, notes: string): Promise<void> {
   const res = await fetch(`/api/jobs/${id}/state`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({ status, notes: notes || null }),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
 }
@@ -136,47 +138,66 @@ function TriageSection({
   isPending,
 }: {
   data: JobDetail;
-  onMutate: (status: string) => void;
+  onMutate: (status: string, notes: string) => void;
   isPending: boolean;
 }) {
   const current = data.status ?? "new";
+  const [notes, setNotes] = useState(data.notes ?? "");
 
   return (
-    <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-400 mb-2">Triage</p>
-      <div className="flex flex-wrap gap-2">
-        {TRIAGE_ACTIONS.map(({ status, label }) => {
-          const isActive = current === status;
-          const activeCls = TRIAGE_ACTIVE_CLS[status];
-          return (
-            <button
-              key={status}
-              onClick={() => onMutate(isActive ? "new" : status)}
-              disabled={isPending}
-              className={[
-                "rounded border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50",
-                isActive
-                  ? activeCls
-                  : "border-slate-200 text-slate-600 hover:bg-slate-50",
-              ].join(" ")}
-            >
-              {isActive ? `✓ ${label}` : label}
-              {status === "applied" && isActive && data.applied_at
-                ? ` · ${appliedDate(data.applied_at)}`
-                : ""}
-            </button>
-          );
-        })}
+    <div className="space-y-3">
+      <div>
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-400 mb-2">Triage</p>
+        <div className="flex flex-wrap gap-2">
+          {TRIAGE_ACTIONS.map(({ status, label }) => {
+            const isActive = current === status;
+            const activeCls = TRIAGE_ACTIVE_CLS[status];
+            return (
+              <button
+                key={status}
+                onClick={() => onMutate(isActive ? "new" : status, notes)}
+                disabled={isPending}
+                className={[
+                  "rounded border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50",
+                  isActive
+                    ? activeCls
+                    : "border-slate-200 text-slate-600 hover:bg-slate-50",
+                ].join(" ")}
+              >
+                {isActive ? `✓ ${label}` : label}
+                {status === "applied" && isActive && data.applied_at
+                  ? ` · ${appliedDate(data.applied_at)}`
+                  : ""}
+              </button>
+            );
+          })}
+        </div>
+        {current !== "new" && (
+          <button
+            onClick={() => onMutate("new", notes)}
+            disabled={isPending}
+            className="mt-1.5 text-xs text-slate-400 hover:text-slate-600 disabled:opacity-50"
+          >
+            Reset to new
+          </button>
+        )}
       </div>
-      {current !== "new" && (
-        <button
-          onClick={() => onMutate("new")}
-          disabled={isPending}
-          className="mt-1.5 text-xs text-slate-400 hover:text-slate-600 disabled:opacity-50"
-        >
-          Reset to new
-        </button>
-      )}
+
+      <div>
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-400 mb-1">Notes</p>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          onBlur={() => {
+            if (notes !== (data.notes ?? "")) {
+              onMutate(current, notes);
+            }
+          }}
+          placeholder="Add a note…"
+          rows={3}
+          className="w-full rounded border border-slate-200 px-3 py-2 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-400 resize-none"
+        />
+      </div>
     </div>
   );
 }
@@ -198,7 +219,8 @@ function JobDetailPanel({
   const qc = useQueryClient();
 
   const stateMut = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) => setJobState(id, status),
+    mutationFn: ({ id, status, notes }: { id: string; status: string; notes: string }) =>
+      setJobState(id, status, notes),
     onSuccess: (_result, variables) => {
       qc.invalidateQueries({ queryKey: ["job", jobId] });
       qc.invalidateQueries({ queryKey: ["jobs"] });
@@ -250,7 +272,7 @@ function JobDetailPanel({
 
             <TriageSection
               data={data}
-              onMutate={(status) => stateMut.mutate({ id: data.id, status })}
+              onMutate={(status, notes) => stateMut.mutate({ id: data.id, status, notes })}
               isPending={stateMut.isPending}
             />
 
@@ -457,12 +479,14 @@ type UndoInfo = {
 };
 
 export default function Jobs() {
-  const [tab, setTab] = useState<"active" | "applied">("active");
+  const [tab, setTab] = useState<"active" | "shortlisted" | "applied">("active");
   const [page, setPage] = useState(1);
   const [minFit, setMinFit] = useState<number | null>(null);
   const [remoteMode, setRemoteMode] = useState("");
   const [salaryDisclosed, setSalaryDisclosed] = useState<boolean | null>(null);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDeferredValue(search);
   const [undoInfo, setUndoInfo] = useState<UndoInfo | null>(null);
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -474,9 +498,10 @@ export default function Jobs() {
     };
   }, []);
 
-  function setTabAndReset(t: "active" | "applied") {
+  function setTabAndReset(t: "active" | "shortlisted" | "applied") {
     setTab(t);
     setPage(1);
+    setSearch("");
   }
   function setMinFitAndReset(v: number | null) {
     setMinFit(v);
@@ -491,11 +516,15 @@ export default function Jobs() {
     setPage(1);
   }
 
-  const statusFilter = tab === "applied" ? "applied" : null;
+  const statusFilter = tab === "active" ? null : tab;
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["jobs", tab, page, minFit, remoteMode, salaryDisclosed],
-    queryFn: () => fetchJobs(page, minFit, remoteMode, salaryDisclosed, statusFilter),
+    queryKey: ["jobs", tab, page, minFit, remoteMode, salaryDisclosed, debouncedSearch],
+    queryFn: () => fetchJobs(page, minFit, remoteMode, salaryDisclosed, statusFilter, debouncedSearch),
   });
 
   const handleTriage = (jobId: string, title: string, prevStatus: string, newStatus: string) => {
@@ -518,19 +547,20 @@ export default function Jobs() {
       clearTimeout(undoTimerRef.current);
       undoTimerRef.current = null;
     }
-    await setJobState(undoInfo.jobId, undoInfo.prevStatus);
+    await setJobState(undoInfo.jobId, undoInfo.prevStatus, "");
     qc.invalidateQueries({ queryKey: ["jobs"] });
     qc.invalidateQueries({ queryKey: ["job", undoInfo.jobId] });
     setUndoInfo(null);
   };
 
   const isActiveTab = tab === "active";
+  const isShortlistedTab = tab === "shortlisted";
 
   return (
     <>
       {/* Tab switcher */}
       <div className="mb-4 flex gap-1 border-b border-slate-200">
-        {(["active", "applied"] as const).map((t) => (
+        {(["active", "shortlisted", "applied"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTabAndReset(t)}
@@ -540,13 +570,24 @@ export default function Jobs() {
                 : "border-transparent text-slate-500 hover:text-slate-700"
             }`}
           >
-            {t === "active" ? "Active" : "Applied"}
+            {t === "active" ? "Active" : t === "shortlisted" ? "Shortlisted" : "Applied"}
           </button>
         ))}
       </div>
 
-      {/* Filters — only on active tab */}
-      {isActiveTab && (
+      {/* Search — all tabs */}
+      <div className="mb-4">
+        <input
+          type="search"
+          placeholder="Search by title or company…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full max-w-sm rounded border border-slate-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+        />
+      </div>
+
+      {/* Filters — only on active and shortlisted tabs */}
+      {(isActiveTab || isShortlistedTab) && (
         <div className="mb-4 flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
             <label className="text-sm text-slate-600 font-medium">Min fit:</label>
@@ -609,9 +650,11 @@ export default function Jobs() {
         <p className="text-slate-500">
           {tab === "applied"
             ? "No applied jobs yet. Open a job and click \"Mark as applied\"."
-            : minFit !== null || remoteMode || salaryDisclosed !== null
-              ? "No jobs match the current filters."
-              : <>No jobs yet. Run{" "}<code className="rounded bg-slate-100 px-1">make fetch SOURCE=adzuna</code> to populate.</>}
+            : tab === "shortlisted"
+              ? "No shortlisted jobs yet. Open a job and click \"Shortlist\"."
+              : minFit !== null || remoteMode || salaryDisclosed !== null || debouncedSearch
+                ? "No jobs match the current filters."
+                : <>No jobs yet. Run{" "}<code className="rounded bg-slate-100 px-1">make fetch SOURCE=adzuna</code> to populate.</>}
         </p>
       )}
 
