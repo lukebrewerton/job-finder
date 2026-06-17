@@ -14,10 +14,19 @@ x-backend-env: &backend-env
   POSTGRES_HOST: postgres
   POSTGRES_PORT: "5432"
   REDIS_URL: redis://redis:6379/0
-  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  SESSION_SECRET: ${SESSION_SECRET:?set in Portainer}
+  OIDC_ISSUER: ${OIDC_ISSUER:?set in Portainer}
+  OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:?set in Portainer}
+  OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:?set in Portainer}
+  OIDC_REDIRECT_URI: ${OIDC_REDIRECT_URI:?set in Portainer}
+  OIDC_ALLOWED_EMAILS: ${OIDC_ALLOWED_EMAILS:-}
+  LLM_PROVIDER: ${LLM_PROVIDER:-anthropic}
   LLM_MODEL: ${LLM_MODEL:-claude-sonnet-4-6}
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
   ADZUNA_APP_ID: ${ADZUNA_APP_ID:-}
   ADZUNA_APP_KEY: ${ADZUNA_APP_KEY:-}
+  REED_API_KEY: ${REED_API_KEY:-}
 
 x-build: &build
   context: .
