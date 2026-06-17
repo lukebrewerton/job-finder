@@ -28,6 +28,13 @@ FastAPI ──reads──▶ Postgres ◀──reads── React SPA (browse / f
 See [`docs/SPEC.md`](docs/SPEC.md) for the full design and the phased build plan, and
 [`CLAUDE.md`](CLAUDE.md) for the working conventions.
 
+## Prerequisites
+
+- Docker and Docker Compose v2
+- An **OIDC provider** — Google, Authentik, Keycloak, or any other provider that supports OIDC Discovery. See [`docs/auth.md`](docs/auth.md).
+- An **LLM API key** — Anthropic or OpenAI — for CV parsing and job scoring. The app runs without one but scoring won't work.
+- API keys for any job sources that need them (Adzuna, Reed). Several sources need no credentials. See [`docs/sources.md`](docs/sources.md).
+
 ## Quickstart (local development)
 
 ```bash
@@ -51,14 +58,16 @@ make format   # ruff --fix + black
 make migrate  # alembic upgrade head
 ```
 
-## Deployment (Portainer GitOps)
+## Deployment
 
-Production runs from [`docker-compose.prod.yml`](docker-compose.prod.yml) as a
-**Portainer Git stack**: point a stack at this repo + that file, set the secrets as
-stack environment variables (never in the repo), and enable auto-update. Pushing a
-known-good state redeploys it. Migrations run as a one-shot `migrate` service before
-the API starts. The same repo deploys identically wherever Portainer runs — local now,
-the Proxmox lab later.
+Production runs from [`docker-compose.prod.yml`](docker-compose.prod.yml). All secrets
+are injected as environment variables — nothing sensitive lives in the repo. Migrations
+run as a one-shot `migrate` service before the API starts; a missing required variable
+causes an immediate, loud failure rather than silent misconfiguration.
+
+See [`docs/deployment.md`](docs/deployment.md) for the full guide, including a
+worked example with Portainer GitOps + Traefik and a Terraform snippet for automated
+deployments.
 
 ## Repository & CI
 
@@ -84,6 +93,17 @@ evidence of the pipeline work.
 Three tools, three jobs: **black** formats, **ruff** lints, **mypy** type-checks.
 Managed with **uv**. mypy is configured pragmatically and tightened over time.
 
+## Documentation
+
+| Doc | Contents |
+|---|---|
+| [`docs/sources.md`](docs/sources.md) | Every source adapter — credentials, config, and how to add a new one |
+| [`docs/auth.md`](docs/auth.md) | OIDC setup for Google, Authentik, and other providers |
+| [`docs/deployment.md`](docs/deployment.md) | Production deployment guide with Portainer + Traefik example |
+| [`docs/SPEC.md`](docs/SPEC.md) | Architecture and phased build plan |
+
 ## Status
 
-Phase 0 (scaffold) complete. See the phase plan in [`docs/SPEC.md`](docs/SPEC.md).
+Phases 1–7 complete (ingestion, dedup, LLM scoring, multi-tenant auth, triage UI,
+targeted ATS sources, and QoL improvements). See the phase plan in
+[`docs/SPEC.md`](docs/SPEC.md) for what's next.
