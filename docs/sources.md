@@ -7,7 +7,9 @@ Job Finder pulls roles from two categories of source:
 
 Sources are managed through the web UI (Sources tab) or seeded via `make seed`. A source has a name, a type (the adapter key), an enabled flag, and a fetch cadence in minutes. Targeted sources also carry a `config` object with type-specific values.
 
-**Sources are global** — they are shared across all users, not per-account. All users see jobs from the same pool. Per-user isolation is at the triage and scoring layer: each user has their own CV, search profile, fit scores, and triage state. If you are running a multi-tenant instance and want different users to see different job pools, the recommended approach is to run separate instances.
+**Sources are global, but the job pool covers all users' roles.** When a fetch runs, it collects the title variations from every active profile across all users, deduplicates them, and uses the combined set as search queries. So if one user is a Platform Engineer and another is a Software Engineer, a single Adzuna fetch will query for both — neither user's roles are missed.
+
+Per-user isolation is at the scoring and triage layer: each user has their own CV, fit scores, and triage state. The fit score surfaces relevant roles to the top for each user individually, regardless of how many other roles are in the shared pool. The only case where separate instances are warranted is if users need completely isolated job pools with no crossover at all.
 
 ---
 
