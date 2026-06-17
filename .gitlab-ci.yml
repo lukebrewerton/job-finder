@@ -31,6 +31,14 @@ lint:
 
 test:
   stage: test
+  services:
+    - name: postgres:16-alpine
+      alias: postgres
+  variables:
+    POSTGRES_USER: jobfinder
+    POSTGRES_PASSWORD: jobfinder
+    POSTGRES_DB: jobfinder
+    POSTGRES_HOST_AUTH_METHOD: trust
   <<: *uv-setup
   cache:
     key: uv-$CI_COMMIT_REF_SLUG
@@ -38,4 +46,5 @@ test:
       - .cache/uv
       - .venv
   script:
+    - uv run alembic upgrade head
     - uv run pytest
