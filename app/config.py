@@ -43,6 +43,12 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     openai_api_key: str | None = None
 
+    # Job cleanup — how many days without being seen in a fetch before a job is removed.
+    # Shortlisted and applied jobs are always exempt. HN jobs use a longer window because
+    # the "Who is Hiring?" thread is monthly, so jobs only appear once per month.
+    job_cleanup_days: int = 14
+    hn_cleanup_days: int = 60
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def database_url(self) -> str:

@@ -15,6 +15,7 @@ export type Job = {
   status: string | null;
   notes: string | null;
   applied_at: string | null;
+  last_seen_at: string;
 };
 
 export type JobDetail = Job & {

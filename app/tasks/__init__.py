@@ -1,3 +1,4 @@
+import app.tasks.cleanup as _cleanup  # noqa: F401 — side-effect: registers cleanup_stale_jobs task
 import app.tasks.fetch as _fetch  # noqa: F401 — side-effect: registers fetch_source_by_id task
 import app.tasks.scoring as _scoring  # noqa: F401 — side-effect: registers score_job task
 from app.workers import celery_app
@@ -9,8 +10,9 @@ def ping() -> str:
     return "pong"
 
 
-# Phase 1+ registers per-source fetch tasks here, scheduled per source cadence, e.g.:
-# celery_app.conf.beat_schedule = {
-#     "fetch-adzuna": {"task": "fetch_source", "schedule": 3600.0, "args": (adzuna_id,)},
-# }
-celery_app.conf.beat_schedule = {}
+celery_app.conf.beat_schedule = {
+    "cleanup-stale-jobs": {
+        "task": "cleanup_stale_jobs",
+        "schedule": 86400.0,  # daily
+    },
+}

@@ -6,7 +6,7 @@ import logging
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
@@ -52,6 +52,7 @@ def run_fetch_source(source: Source, titles: list[str], session: Session) -> dic
 
     fetched = new = updated = skipped = 0
     new_job_ids: list[uuid.UUID] = []
+    seen_external_ids: list[str] = []
 
     for raw in get_adapter(source.type).fetch(ctx):
         fetched += 1
@@ -59,6 +60,7 @@ def run_fetch_source(source: Source, titles: list[str], session: Session) -> dic
         dedup_key = make_dedup_key(raw.title, raw.company, raw.location)
 
         is_new = raw.external_id not in existing
+        seen_external_ids.append(raw.external_id)
         if not is_new:
             if existing[raw.external_id] == content_hash:
                 skipped += 1
@@ -90,6 +92,7 @@ def run_fetch_source(source: Source, titles: list[str], session: Session) -> dic
                 salary_disclosed=raw.salary_disclosed,
                 posted_at=raw.posted_at,
                 fetched_at=now,
+                last_seen_at=now,
                 content_hash=content_hash,
                 dedup_key=dedup_key,
             )
@@ -109,6 +112,7 @@ def run_fetch_source(source: Source, titles: list[str], session: Session) -> dic
                     "salary_disclosed": raw.salary_disclosed,
                     "posted_at": raw.posted_at,
                     "fetched_at": now,
+                    "last_seen_at": now,
                     "content_hash": content_hash,
                     "dedup_key": dedup_key,
                     "updated_at": now,
@@ -116,6 +120,14 @@ def run_fetch_source(source: Source, titles: list[str], session: Session) -> dic
             )
         )
         session.execute(stmt)
+
+    # Bump last_seen_at for skipped jobs (content unchanged — not touched by the upsert above).
+    if seen_external_ids:
+        session.execute(
+            update(Job)
+            .where(Job.source_id == source.id, Job.external_id.in_(seen_external_ids))
+            .values(last_seen_at=now)
+        )
 
     session.commit()
     source.last_run_at = now
@@ -141,43 +153,47 @@ def _enqueue_scoring(session: Session, job_ids: list[uuid.UUID], source_authorit
 
     from app.tasks.scoring import score_job_task
 
-    default_cv_id = session.scalar(select(CV.id).where(CV.is_default.is_(True)).limit(1))
-    if default_cv_id is None:
+    default_cv_ids = list(session.scalars(select(CV.id).where(CV.is_default.is_(True))))
+    if not default_cv_ids:
         log.info("no default CV set — skipping scoring enqueue for %d new jobs", len(job_ids))
         return
 
-    # New jobs with their source authority (passed in — no need to re-join).
     new_job_rows = session.execute(select(Job.id, Job.dedup_key).where(Job.id.in_(job_ids))).all()
     new_dedup_keys = [row.dedup_key for row in new_job_rows]
 
-    # For dedup_keys that already have a scored sibling, record the maximum authority
-    # of the scored sibling's source. We only skip enqueueing if a sibling of equal or
-    # higher authority is already scored — an ATS job must always be scored even when
-    # an aggregator duplicate was scored first.
-    scored_max_authority: dict[str, int] = {
-        str(row[0]): int(row[1])
-        for row in session.execute(
-            select(Job.dedup_key, func.max(Source.authority))
-            .join(JobScore, JobScore.job_id == Job.id)
-            .join(Source, Source.id == Job.source_id)
-            .where(JobScore.cv_id == default_cv_id)
-            .where(Job.dedup_key.in_(new_dedup_keys))
-            .group_by(Job.dedup_key)
-        ).all()
-    }
+    total_enqueued = 0
+    for cv_id in default_cv_ids:
+        # For dedup_keys that already have a scored sibling against this CV, record the
+        # maximum authority of that sibling's source. We only skip enqueueing if a sibling
+        # of equal or higher authority is already scored — an ATS job must always be scored
+        # even when an aggregator duplicate was scored first.
+        scored_max_authority: dict[str, int] = {
+            str(row[0]): int(row[1])
+            for row in session.execute(
+                select(Job.dedup_key, func.max(Source.authority))
+                .join(JobScore, JobScore.job_id == Job.id)
+                .join(Source, Source.id == Job.source_id)
+                .where(JobScore.cv_id == cv_id)
+                .where(Job.dedup_key.in_(new_dedup_keys))
+                .group_by(Job.dedup_key)
+            ).all()
+        }
 
-    cv_id_str = str(default_cv_id)
-    enqueued = 0
-    for row in new_job_rows:
-        existing_auth = scored_max_authority.get(row.dedup_key, -1)
-        if existing_auth >= source_authority:
-            continue  # sibling of equal-or-higher authority already scored
-        score_job_task.delay(str(row.id), cv_id_str)
-        enqueued += 1
+        cv_id_str = str(cv_id)
+        enqueued = 0
+        for row in new_job_rows:
+            existing_auth = scored_max_authority.get(row.dedup_key, -1)
+            if existing_auth >= source_authority:
+                continue  # sibling of equal-or-higher authority already scored for this CV
+            score_job_task.delay(str(row.id), cv_id_str)
+            enqueued += 1
 
-    log.info(
-        "enqueued scoring for %d/%d new jobs against cv=%s",
-        enqueued,
-        len(job_ids),
-        cv_id_str,
-    )
+        log.info(
+            "enqueued scoring for %d/%d new jobs against cv=%s",
+            enqueued,
+            len(job_ids),
+            cv_id_str,
+        )
+        total_enqueued += enqueued
+
+    log.info("total scoring tasks enqueued: %d across %d CVs", total_enqueued, len(default_cv_ids))

@@ -110,6 +110,23 @@ function appliedDate(iso: string): string {
   });
 }
 
+const STALE_DAYS = 14;
+
+function staleBadge(lastSeenAt: string) {
+  const days = Math.floor(
+    (Date.now() - new Date(lastSeenAt).getTime()) / 86_400_000,
+  );
+  if (days < STALE_DAYS) return null;
+  return (
+    <span
+      title={`Last seen on this source ${days} day${days === 1 ? "" : "s"} ago — listing may have closed`}
+      className="ml-1.5 rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700"
+    >
+      {days}d ago
+    </span>
+  );
+}
+
 const FLAG_LABELS: Record<string, string> = {
   stretch_role: "Stretch",
   missing_must_have: "Missing must-have",
@@ -396,6 +413,7 @@ function JobsTable({
                 >
                   {job.title}
                 </a>
+                {staleBadge(job.last_seen_at)}
               </td>
               <td className="px-4 py-3 text-slate-600">{job.company}</td>
               <td className="px-4 py-3 text-slate-500">{job.location ?? "—"}</td>

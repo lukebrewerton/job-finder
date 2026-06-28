@@ -37,6 +37,7 @@ class JobOut(BaseModel):
     salary_currency: str | None
     salary_disclosed: bool
     source_id: uuid.UUID
+    last_seen_at: datetime
     fit_score: int | None = None
     flags: list[str] | None = None
     status: str | None = None
@@ -74,8 +75,10 @@ class JobStateOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
-def _default_cv_id(session: Session) -> uuid.UUID | None:
-    return session.scalar(select(CV.id).where(CV.is_default.is_(True)).limit(1))
+def _default_cv_id(session: Session, user_id: uuid.UUID) -> uuid.UUID | None:
+    return session.scalar(
+        select(CV.id).where(CV.is_default.is_(True), CV.user_id == user_id).limit(1)
+    )
 
 
 def _active_profile(session: Session, user_id: uuid.UUID) -> SearchProfile | None:
@@ -184,7 +187,7 @@ def list_jobs(
     status: str | None = Query(None),
     search: str | None = Query(None, max_length=200),
 ) -> JobsPage:
-    cv_id = _default_cv_id(session)
+    cv_id = _default_cv_id(session, user.id)
     profile = _active_profile(session, user.id)
     exclude_entry_level = profile.exclude_entry_level if profile else False
 
@@ -224,6 +227,7 @@ def list_jobs(
                 salary_currency=job.salary_currency,
                 salary_disclosed=job.salary_disclosed,
                 source_id=job.source_id,
+                last_seen_at=job.last_seen_at,
                 fit_score=score.fit_score if score else None,
                 flags=score.flags if score else None,
                 status=state.status if state else None,
@@ -244,7 +248,7 @@ def get_job(
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found.")
 
-    cv_id = _default_cv_id(session)
+    cv_id = _default_cv_id(session, user.id)
     score: JobScore | None = None
     if cv_id is not None:
         score = session.scalar(
@@ -267,6 +271,7 @@ def get_job(
         salary_currency=job.salary_currency,
         salary_disclosed=job.salary_disclosed,
         source_id=job.source_id,
+        last_seen_at=job.last_seen_at,
         fit_score=score.fit_score if score else None,
         flags=score.flags if score else None,
         matched_skills=score.matched_skills if score else None,

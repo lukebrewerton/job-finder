@@ -51,6 +51,8 @@ All variables must be injected at deploy time. None of them belong in the reposi
 | Variable | Description | Default |
 |---|---|---|
 | `LOG_LEVEL` | Log verbosity | `INFO` |
+| `JOB_CLEANUP_DAYS` | Days without a fetch appearance before an Active job is removed | `14` |
+| `HN_CLEANUP_DAYS` | Same threshold for HN Who is Hiring jobs (monthly thread) | `60` |
 | `LLM_PROVIDER` | `anthropic` or `openai` | `anthropic` |
 | `LLM_MODEL` | Model ID for the selected provider | `claude-sonnet-4-6` |
 | `ANTHROPIC_API_KEY` | Required when `LLM_PROVIDER=anthropic` | — |
