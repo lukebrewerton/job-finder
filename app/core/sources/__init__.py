@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 # Import all adapters so their @register decorators execute.
 # Adding a new source: create the module, then add its import here.
 from app.core.sources import adzuna as _adzuna  # noqa: F401

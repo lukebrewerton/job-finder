@@ -1,0 +1,5 @@
+[allowlist]
+description = "Recorded third-party API fixtures — public response data, not project secrets"
+paths = [
+  '''tests/fixtures/.*''',
+]

@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """add exclude_entry_level to search_profiles
 
 Revision ID: b3c1e7f82a90

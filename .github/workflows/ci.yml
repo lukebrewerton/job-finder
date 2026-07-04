@@ -20,6 +20,7 @@ jobs:
       - run: uv run mypy app
 
   test:
+    needs: lint
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -45,3 +46,16 @@ jobs:
       - run: uv sync --frozen
       - run: uv run alembic upgrade head
       - run: uv run pytest
+
+  gitleaks:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # No GITLEAKS_LICENSE needed — only required for repos owned by a
+          # GitHub organization account, not a personal account.

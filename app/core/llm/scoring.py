@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """CV-to-job fit scoring via LLM rubric.
 
 Returns a capability fit score (0–100) with evidence — no probability metrics.

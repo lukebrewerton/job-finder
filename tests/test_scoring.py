@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Unit tests for job scoring — uses a stub LLMProvider, no live network."""
 
 from __future__ import annotations

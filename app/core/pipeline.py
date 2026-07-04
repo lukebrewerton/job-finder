@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Fetch → normalise → dedup → upsert pipeline for a single source."""
 
 from __future__ import annotations

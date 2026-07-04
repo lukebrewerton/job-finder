@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Daily cleanup task — removes job listings that have not been seen in recent fetches.
 
 Shortlisted and applied jobs (matched on dedup_key so ATS/aggregator siblings are both

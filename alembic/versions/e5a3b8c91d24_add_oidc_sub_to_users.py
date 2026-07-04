@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """add oidc_sub to users
 
 Revision ID: e5a3b8c91d24

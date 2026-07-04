@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """add_summary_to_job_scores
 
 Revision ID: 1c8cd05b9d9a

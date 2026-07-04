@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """LLM-based normalisation for unstructured job postings (e.g. HN comments).
 
 Only called for sources that cannot provide structured fields directly.

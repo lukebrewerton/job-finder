@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Lever ATS adapter.
 
 Fetches a company's entire public job board via the Lever v0 postings API.

@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 from collections.abc import Iterator
 
 from sqlalchemy import create_engine

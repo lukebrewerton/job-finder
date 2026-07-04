@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Celery task for running a single source fetch by ID."""
 
 from __future__ import annotations

@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 import app.tasks.cleanup as _cleanup  # noqa: F401 — side-effect: registers cleanup_stale_jobs task
 import app.tasks.fetch as _fetch  # noqa: F401 — side-effect: registers fetch_source_by_id task
 import app.tasks.scoring as _scoring  # noqa: F401 — side-effect: registers score_job task

@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Integration tests for ATS dedup authority (Phase 5, clause 3).
 
 These tests hit the real PostgreSQL database.  Each test inserts isolated

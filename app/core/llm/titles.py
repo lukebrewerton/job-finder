@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Title expansion: canonical role + seniority → list of search-worthy title variations.
 
 Called once on profile save. Never called per-fetch.

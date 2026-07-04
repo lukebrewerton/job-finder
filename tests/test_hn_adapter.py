@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Unit tests for the HN Who is Hiring adapter — stub LLM and network, no live calls."""
 
 from __future__ import annotations

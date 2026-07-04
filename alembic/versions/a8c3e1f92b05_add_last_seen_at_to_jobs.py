@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """add last_seen_at to jobs
 
 Tracks the most recent fetch in which each job was returned by its source.

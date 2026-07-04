@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Greenhouse ATS adapter.
 
 Fetches a company's entire public job board. Requires `board_token` in source config.

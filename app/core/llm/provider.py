@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """LLM provider interface and concrete implementations.
 
 Only one provider is active at a time, selected by LLM_PROVIDER env var.

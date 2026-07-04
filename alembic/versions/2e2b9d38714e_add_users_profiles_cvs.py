@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """add_users_profiles_cvs
 
 Revision ID: 2e2b9d38714e

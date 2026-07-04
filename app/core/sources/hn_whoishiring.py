@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """HN 'Who is hiring?' adapter.
 
 Fetches the current monthly thread via the Algolia HN API, then uses an LLM

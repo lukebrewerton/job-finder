@@ -125,6 +125,7 @@ convention — see `CLAUDE.local.md` if present.
 | No LinkedIn scraping | ToS, anti-bot friction, aggregators already cover most LinkedIn-sourced roles |
 | No browser automation (v1) | Extension point exists in SPEC §13; not built initially |
 | No fake success probability | Fit score + flags only; "likelihood of success" is false precision |
+| GitHub canonical (not GitLab) | Bigger portfolio audience, better free security tooling for public repos, feature branches cover the "private staging" need without a second remote |
 
 If you think one of these should change, say so and why — don't just silently work around it.
 
@@ -138,3 +139,14 @@ If you think one of these should change, say so and why — don't just silently 
 5. Before ending the session, update `docs/STATUS.md` with what changed and what's
    next, and commit it alongside the code change. Keep it short — overwrite, don't
    append to a growing log.
+6. New source adapters record fixtures under `tests/fixtures/<key>/` per the adapter
+   convention above. Recorded fixtures sometimes contain high-entropy fields (tokens,
+   ad references, tracking IDs) that trip secret scanners as false positives even
+   though they're harmless public API responses — that's expected and already handled
+   by the `tests/fixtures/.*` allowlist in `.gitleaks.toml`. Don't try to scrub or
+   redact these fields; add the fixture's path to the allowlist instead if a new
+   source's recorded response trips a new finding.
+7. Every new source file (`app/`, `web/src/`) carries an SPDX header as the first
+   lines of the file, before any docstring: `# Copyright (C) 2026 Luke Brewerton` /
+   `# SPDX-License-Identifier: AGPL-3.0-or-later` for Python, `//` for TypeScript.
+   Skip this for `tests/fixtures/**` (not authored work) and generated/vendored files.

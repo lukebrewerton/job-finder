@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Unit tests for the JSON-LD adapter — no live network."""
 
 from pathlib import Path

@@ -1,3 +1,5 @@
+// Copyright (C) 2026 Luke Brewerton
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Source } from "../types";

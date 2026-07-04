@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """JSON-LD careers page adapter.
 
 Given a `url` in source config, fetches the page HTML and extracts

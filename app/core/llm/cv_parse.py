@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """CV parsing: raw text → structured summary used by the scoring rubric.
 
 This is a 4th LLM use beyond the spec's three named lanes — included because deterministic

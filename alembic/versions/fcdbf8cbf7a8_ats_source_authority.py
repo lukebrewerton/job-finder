@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Luke Brewerton
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """add authority to sources, drop type unique constraint
 
 Allows multiple source rows with the same type (e.g. one per ATS company).
