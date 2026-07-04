@@ -82,14 +82,12 @@ deployments.
 
 ## Repository & CI
 
-- **Canonical: GitLab** (`brewerton/workloads/job-finder`, private). The source of
-  truth; development and deployment happen here.
-- **Mirror: GitHub** (public, portfolio). A one-way **push mirror** from GitLab
-  (GitLab → Settings → Repository → *Mirroring repositories*). You push to GitLab;
-  GitHub follows. Never develop on the mirror.
+Developed directly on GitHub. Work happens on feature branches and lands on `main`
+via pull request — see [`CONTRIBUTING.md`](CONTRIBUTING.md) if you'd like to
+contribute, including how to add a new source adapter.
 
-CI runs on GitLab only (`.gitlab-ci.yml`) — lint, type-check, and test. GitHub is a
-mirror and carries no CI; GitHub Actions are not used.
+CI runs via GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) —
+lint, type-check, and test on every push and pull request.
 
 ## Tooling
 
@@ -107,6 +105,6 @@ Managed with **uv**. mypy is configured pragmatically and tightened over time.
 
 ## Status
 
-Phases 1–7 complete (ingestion, dedup, LLM scoring, multi-tenant auth, triage UI,
-targeted ATS sources, and QoL improvements). See the phase plan in
-[`docs/SPEC.md`](docs/SPEC.md) for what's next.
+Phases 0–6 complete (scaffold, ingestion pipeline, profiles/CVs, LLM scoring,
+breadth sources, targeted ATS sources, and multi-tenant auth with triage). See the
+phase plan in [`docs/SPEC.md`](docs/SPEC.md) §14 for what's next.
