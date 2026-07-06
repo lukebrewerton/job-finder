@@ -24,15 +24,15 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
+    # PostgreSQL does not allow column references in DEFAULT expressions, so we
+    # add the column as nullable, backfill from fetched_at, then enforce NOT NULL
+    # and add a server default of now() for future inserts.
     op.add_column(
         "jobs",
-        sa.Column(
-            "last_seen_at",
-            sa.DateTime(timezone=True),
-            nullable=False,
-            server_default=sa.text("fetched_at"),
-        ),
+        sa.Column("last_seen_at", sa.DateTime(timezone=True), nullable=True),
     )
+    op.execute(sa.text("UPDATE jobs SET last_seen_at = fetched_at WHERE last_seen_at IS NULL"))
+    op.alter_column("jobs", "last_seen_at", nullable=False, server_default=sa.text("now()"))
     op.create_index("ix_jobs_last_seen_at", "jobs", ["last_seen_at"])
 
 
