@@ -29,3 +29,6 @@ notes
 # Personal instructions layer (not for the public mirror)
 CLAUDE.local.md
 docs/STATUS.md
+
+# SQL and other misc files
+*.sql
