@@ -32,14 +32,16 @@ def create_app() -> FastAPI:
                 conn.execute(text("SELECT 1"))
             checks["database"] = "ok"
         except Exception as exc:  # noqa: BLE001 - report, don't crash the endpoint
-            checks["database"] = f"error: {exc}"
+            logging.exception("Database readiness check failed: %s", exc)
+            checks["database"] = "error"
             healthy = False
 
         try:
             redis.Redis.from_url(settings.redis_url).ping()
             checks["redis"] = "ok"
         except Exception as exc:  # noqa: BLE001
-            checks["redis"] = f"error: {exc}"
+            logging.exception("Redis readiness check failed: %s", exc)
+            checks["redis"] = "error"
             healthy = False
 
         return {"ready": healthy, "checks": checks}
